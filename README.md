@@ -58,6 +58,6 @@ This project is a **web-based system** that allows a teacher to take attendance 
 
 ## 🧑‍💻 Team
 
-* **Ceren Yasar:**
-* **Mehmet Şenadlı:** 
-* **Bilal Çiftec:** 
+* **Ceren Yasar**
+* **Mehmet Şenadlı** 
+* **Bilal Çifteci** 
