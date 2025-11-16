@@ -4,25 +4,22 @@ This project is a **web-based system** that allows a teacher to take attendance 
 
 ---
 
-## 🚀 Planned Features
+## 🗓 Project Plan / Methodology
 
-### **1. Student Management (Sprint 1)**
-* Allows teachers to **register new students** into the system.
-* Teachers can add **name, student number, department, class, and a photograph** for each student.
-* Includes **basic form validation**, such as ensuring the student number is unique and fields are not left empty.
+- **Sprint 0 – Requirements & Analysis**  
+  Define project scope, gather requirements, and create the Software Requirements Specification (SRS) document.
 
-### **2. Automatic Attendance (Sprint 2)**
-* Captures a **live camera feed** through the web interface.
-* **Recognizes students** by comparing faces from the camera feed against the registered student photos.
-* **Automatically creates an attendance record** for recognized students.
-* Provides **real-time feedback** to the user, such as "Attendance taken" or "Student not recognized".
-* Includes an option for the teacher to **manually add attendance** for students who are not recognized by the system.
+- **Sprint 1 – Database Design & Management**  
+  Design and configure the database, including security and performance settings.
 
-### **3. Reporting and Tracking (Sprint 3)**
-* Interface to **view attendance records** on a daily or per-student basis.
-* Ability to **filter attendance records** by date, class, or department.
-* Option to **export attendance lists** as a PDF or CSV report.
-* Allows the teacher to **manually edit attendance records** if necessary.
+- **Sprint 2 – Student Management Module**  
+  Develop student registration forms and backend integration.
+
+- **Sprint 3 – Camera Integration**  
+  Integrate camera and face recognition system for automatic attendance tracking.
+
+- **Sprint 4 – Reporting & Admin Panel**  
+  Build an admin panel to view, filter, edit, and manage attendance records.
 
 ---
 
