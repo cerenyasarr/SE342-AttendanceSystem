@@ -1,61 +1,60 @@
-📷 Smart Attendance System
+# 📷 Smart Attendance System
 
-This is a web-based system that allows a teacher to take attendance automatically by recognizing students via a web camera. The goal is to speed up the attendance process, automate it, and minimize manual errors.
+This project is a **web-based system** that allows a teacher to take attendance automatically by recognizing students via a web camera. The goal is to **speed up the attendance process, automate it, and minimize manual errors**.
 
-🛠️ Planned Tech Stack
-	•	Frontend: Web interface for teachers to manage students, view live camera feed, and check reports.
-	•	Backend: API server for saving student data, running face recognition, and serving reports.
-	•	Database: Stores student information (including photos) and attendance records.
-	•	Artificial Intelligence (AI): Face recognition and matching module using stored student photos.
+---
 
-🗺️ Project Roadmap (Sprint Plan)
+## 🚀 Planned Features
 
-<details>
-<summary>**Sprint 1: Student Management**</summary>
+### **1. Student Management (Sprint 1)**
+* Allows teachers to **register new students** into the system.
+* Teachers can add **name, student number, department, class, and a photograph** for each student.
+* Includes **basic form validation**, such as ensuring the student number is unique and fields are not left empty.
 
+### **2. Automatic Attendance (Sprint 2)**
+* Captures a **live camera feed** through the web interface.
+* **Recognizes students** by comparing faces from the camera feed against the registered student photos.
+* **Automatically creates an attendance record** for recognized students.
+* Provides **real-time feedback** to the user, such as "Attendance taken" or "Student not recognized".
+* Includes an option for the teacher to **manually add attendance** for students who are not recognized by the system.
 
-	•	Allows teachers to register new students into the system.
-	•	Teachers can add: name, student number, department, class, and a photograph.
-	•	Basic form validation:
-	•	Ensure student number is unique.
-	•	Ensure no fields are left empty.
+### **3. Reporting and Tracking (Sprint 3)**
+* Interface to **view attendance records** on a daily or per-student basis.
+* Ability to **filter attendance records** by date, class, or department.
+* Option to **export attendance lists** as a PDF or CSV report.
+* Allows the teacher to **manually edit attendance records** if necessary.
 
-</details>
+---
 
+## 🛠️ Planned Tech Stack
 
-<details>
-<summary>**Sprint 2: Automatic Attendance**</summary>
+* **Frontend:** Web interface for teachers to manage students, view the live camera feed, and check reports.
+* **Backend:** API server responsible for saving student data, running the face recognition algorithm, and serving reporting data.
+* **Database:** Stores student information (including photos) and attendance records.
+* **Artificial Intelligence (AI):** Face recognition and matching module using the stored student photos.
 
+---
 
-	•	Captures live camera feed through the web interface.
-	•	Recognizes students by comparing faces from the camera feed against registered student photos.
-	•	Automatically creates attendance records for recognized students.
-	•	Provides real-time feedback, e.g., “Attendance taken” or “Student not recognized”.
-	•	Option for manual attendance for unrecognized students.
+## 🗺️ Project Roadmap (Sprint Plan)
 
-</details>
+* **Sprint 1: Student Registration & Information Entry**  
+  **Goal:** Enable the registration of students with their basic information and photos into the system.
 
+* **Sprint 2: Student Recognition & Attendance via Camera**  
+  **Goal:** Recognize students from the camera feed and automatically log their attendance.
 
-<details>
-<summary>**Sprint 3: Reporting and Tracking**</summary>
+* **Sprint 3: Attendance Reporting and Tracking**  
+  **Goal:** Enable the teacher to view, report on, and track all attendance records.
 
-
-	•	Interface to view attendance records by day or per student.
-	•	Filter records by date, class, or department.
-	•	Export attendance lists as PDF or CSV.
-	•	Allow teachers to manually edit attendance records.
-
-</details>
-
-🧑‍💻 Team
-	•	Ceren Yasar
-	•	Mehmet Şenadlı
-	•	Bilal Çifteci
-
-📸 Screenshots
-
-(Screenshots will be added as the project progresses.)
+---
 
 
+## 🖼️ Screenshots
 
-Bunu HTML versiyonunu da hazırlamamı ister misin?
+*Screenshots will be added soon.*
+
+## 🧑‍💻 Team
+
+* **Ceren Yasar:**
+* **Mehmet Şenadlı:** 
+* **Bilal Çiftec:** 
