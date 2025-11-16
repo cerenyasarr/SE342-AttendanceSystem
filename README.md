@@ -53,6 +53,9 @@ This project is a **web-based system** that allows a teacher to take attendance 
 
 *Screenshots will be added soon.*
 
+---
+
+
 ## 🧑‍💻 Team
 
 * **Ceren Yasar:**
