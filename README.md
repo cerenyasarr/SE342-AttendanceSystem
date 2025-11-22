@@ -27,13 +27,13 @@ This project is a **web-based system** that allows a teacher to take attendance 
 
 ## 🚀 Planned Features
 
-- **Student Management (Sprint 2)**  
+- **Student Management**  
   Teachers can register new students with details like name, student number, department, class, and photo. Form validations ensure required fields are filled and student numbers are unique.
 
-- **Automatic Attendance (Sprint 3)**  
+- **Automatic Attendance**  
   Live camera feed captures student faces. The system automatically recognizes students, records attendance, and provides real-time feedback. Teachers can manually add attendance for unrecognized students.
 
-- **Reporting and Tracking (Sprint 4)**  
+- **Reporting and Tracking**  
   View attendance records daily or per student. Filter by date, class, or department. Export attendance lists as PDF or CSV. Edit records manually if needed.
   
 ---
