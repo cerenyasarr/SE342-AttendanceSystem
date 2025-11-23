@@ -16,15 +16,15 @@ export default function TeacherLiveAttendance() {
   const [manualStudentId, setManualStudentId] = useState('');
 
   const courses = [
-    { id: 'CSE101', name: 'Algoritma ve Programlama I' },
-    { id: 'CSE102', name: 'Veri Yapıları' },
-    { id: 'CSE201', name: 'Nesne Yönelimli Programlama' },
-    { id: 'CSE301', name: 'Veritabanı Yönetim Sistemleri' },
+    { id: 'CEN101', nameKey: 'algorithms' },
+    { id: 'CSE102', nameKey: 'dataStructures' },
+    { id: 'CSE201', nameKey: 'oop' },
+    { id: 'CSE301', nameKey: 'database' },
   ];
 
   const students = [
-    { id: '213332', name: 'Student 1', time: '%90 emin', status: 'present' },
-    { id: 'Can Öztürk', name: 'Can Öztürk', id2: '2024005', time: '%88 emin', status: 'present' },
+    { id: '213332', name: 'Student 1', confidence: 90, status: 'present' },
+    { id: 'Can Öztürk', name: 'Can Öztürk', id2: '2024005', confidence: 88, status: 'present' },
   ];
 
   const translations = {
@@ -41,7 +41,7 @@ export default function TeacherLiveAttendance() {
       welcome: 'Hoş geldiniz,',
       teacher: 'Öğretmen',
       instantList: 'Anlık Yoklama Listesi',
-      students_enrolled: 'Tanınan öğrenciler (FR-9)',
+      students_enrolled: 'Tanınan öğrenciler',
       present: 'Tanındı',
       absent: 'Tanınmadı',
       attendanceTime: 'Anlık Saat',
@@ -51,6 +51,24 @@ export default function TeacherLiveAttendance() {
       methodSelect: 'Yöntem seçiniz',
       autoAttendance: 'Otomatik Yoklama',
       manualAttendance: 'Manuel Yoklama',
+      courseSubtitle: 'Yüz tanıma sistemi ile otomatik yoklama alın',
+      courseLabel: 'Ders',
+      manualAttendanceTitle: 'Manuel Yoklama Ekle',
+      addManualAttendance: 'Yoklama Ekle',
+      cancel: 'İptal',
+      studentNumber: 'Öğrenci Numarası',
+      manualAttendanceNote: 'Bu yoklama "Manuel" olarak işaretlenecektir',
+      manualAttendanceDescription: 'Tanınamayan öğrenci için manuel olarak yoklama alınız',
+      liveIndicator: 'Canlı',
+      faceRecognitionActive: 'Yüz tanıma aktif - Öğrenciler kamera karşısına gelebilir',
+      confidenceRate: 'Doğruluk Oranı',
+      universityName: 'Maltepe Üniversitesi',
+      systemName: 'Otomatik Yoklama Sistemi',
+      // Course names for TR
+      algorithms: 'Algoritma ve Programlama I',
+      dataStructures: 'Veri Yapıları',
+      oop: 'Nesne Yönelimli Programlama',
+      database: 'Veritabanı Yönetim Sistemleri',
     },
     EN: {
       liveAttendance: 'Live Attendance',
@@ -65,7 +83,7 @@ export default function TeacherLiveAttendance() {
       welcome: 'Welcome,',
       teacher: 'Teacher',
       instantList: 'Instant Attendance List',
-      students_enrolled: 'Recognized students (FR-9)',
+      students_enrolled: 'Recognized students',
       present: 'Present',
       absent: 'Absent',
       attendanceTime: 'Current Time',
@@ -75,6 +93,24 @@ export default function TeacherLiveAttendance() {
       methodSelect: 'Select method',
       autoAttendance: 'Automatic Attendance',
       manualAttendance: 'Manual Attendance',
+      courseSubtitle: 'Automatic attendance with face recognition system',
+      courseLabel: 'Course',
+      manualAttendanceTitle: 'Add Manual Attendance',
+      addManualAttendance: 'Add Attendance',
+      cancel: 'Cancel',
+      studentNumber: 'Student Number',
+      manualAttendanceNote: 'This attendance will be marked as "Manual"',
+      manualAttendanceDescription: 'Manually take attendance for unrecognized students',
+      liveIndicator: 'Live',
+      faceRecognitionActive: 'Face recognition active - Students can stand in front of the camera',
+      confidenceRate: 'Accuracy Rate',
+      universityName: 'Maltepe University',
+      systemName: 'Automatic Attendance System',
+      // Course names for EN
+      algorithms: 'Algorithms and Programming I',
+      dataStructures: 'Data Structures',
+      oop: 'Object Oriented Programming',
+      database: 'Database Management Systems',
     }
   };
 
@@ -134,7 +170,7 @@ export default function TeacherLiveAttendance() {
       )}
       
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-48' : 'w-20'} hidden lg:flex fixed lg:static h-full lg:h-auto transition-all duration-300 ${
+      <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} hidden lg:flex fixed lg:static max-h-screen lg:max-h-none overflow-y-auto lg:overflow-y-visible transition-all duration-300 ${
         isDarkMode ? 'bg-gray-700' : 'bg-gray-600'
       } text-white flex-col p-4 z-50`}>
         {/* Logo and Title */}
@@ -147,55 +183,61 @@ export default function TeacherLiveAttendance() {
             priority
             className="flex-shrink-0"
           />
-          <div className={`text-sm transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>
-            <p className="font-bold whitespace-nowrap">Maltepe Üniversitesi</p>
-            <p className="text-xs opacity-80 whitespace-nowrap">Automatic Attendance System</p>
+          <div className={`text-sm transition-opacity duration-300 overflow-hidden ${sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0'}`}>
+            <p className="font-bold whitespace-nowrap">{t.universityName}</p>
+            <p className="text-xs opacity-80 whitespace-nowrap">{t.systemName}</p>
           </div>
         </div>
 
         {/* Navigation Items */}
-        <nav className="flex-1 space-y-2">
-          <div className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+        <div className="flex-1 space-y-2">
+          <button
+          className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 h-10 ${
             isDarkMode ? 'bg-gray-800' : 'bg-gray-700'
           }`}>
-            <Video size={20} className="flex-shrink-0" />
-            <span className={`font-semibold transition-opacity duration-300 whitespace-nowrap ${sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>{t.liveAttendance}</span>
-          </div>
+  <Video size={20} className="flex-shrink-0" />
+  <span className={`transition-opacity duration-300 leading-none font-bold ${
+    sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'
+  }`}>
+    {t.liveAttendance}
+          </span>
+          </button>
+
           <button
             onClick={() => navigateToPage('student-registration')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition ${
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
               isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
             }`}
           >
             <UserPlus size={20} className="flex-shrink-0" />
-            <span className={`transition-opacity duration-300 whitespace-nowrap ${sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>{t.studentRegistration}</span>
+            <span className={`transition-opacity duration-300 leading-none font-bold ${sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'}`}>{t.studentRegistration}</span>
           </button>
           <button
             onClick={() => navigateToPage('teacher-reports')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition ${
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
               isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
             }`}
           >
             <BarChart3 size={20} className="flex-shrink-0" />
-            <span className={`transition-opacity duration-300 whitespace-nowrap ${sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>{t.attendanceReports}</span>
+            <span className={`transition-opacity duration-300 leading-none font-bold ${sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'}`}>{t.attendanceReports}</span>
           </button>
-        </nav>
+        </div>
 
         {/* Bottom Section */}
         <div className="space-y-2 border-t border-gray-500 pt-3 mt-auto">
-          <div className={`text-xs opacity-75 px-4 mb-2 transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}>
+          <div className={`text-xs opacity-75 px-4 mb-2 transition-opacity duration-300 ${sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 h-0 overflow-hidden'}`}>
             <p>{t.welcome}</p>
             <p className="font-semibold">Dr. Emre Olca</p>
             <p className="text-xs opacity-60">{t.teacher}</p>
           </div>
           <button 
             onClick={handleLogout}
-            className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg transition ${
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 h-10 ${
               isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
             }`}
           >
             <LogOut size={18} className="flex-shrink-0" />
-            <span className={`transition-opacity duration-300 whitespace-nowrap ${sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>{t.logout}</span>
+            <span className={`transition-opacity duration-300 leading-none ${sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'}`}>{t.logout}</span>
           </button>
         </div>
       </aside>
@@ -214,36 +256,36 @@ export default function TeacherLiveAttendance() {
             priority
           />
           <div className="text-sm">
-            <p className="font-bold">Maltepe Üniversitesi</p>
-            <p className="text-xs opacity-80">Automatic Attendance System</p>
+            <p className="font-bold">{t.universityName}</p>
+            <p className="text-xs opacity-80">{t.systemName}</p>
           </div>
         </div>
 
         {/* Navigation Items */}
         <nav className="flex-1 space-y-2">
-          <div className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+          <div className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 h-10 ${
             isDarkMode ? 'bg-gray-800' : 'bg-gray-700'
           }`}>
-            <Video size={20} />
-            <span className="font-semibold">{t.liveAttendance}</span>
+            <Video size={20} className="flex-shrink-0" />
+            <span className={`transition-opacity duration-300 leading-none opacity-100 w-full font-bold truncate`}>{t.liveAttendance}</span>
           </div>
           <button
             onClick={() => navigateToPage('student-registration')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition ${
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
               isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
             }`}
           >
-            <UserPlus size={20} />
-            <span>{t.studentRegistration}</span>
+            <UserPlus size={20} className="flex-shrink-0" />
+            <span className={`transition-opacity duration-300 leading-none opacity-100 w-full font-bold truncate`}>{t.studentRegistration}</span>
           </button>
           <button
             onClick={() => navigateToPage('teacher-reports')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition ${
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
               isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
             }`}
           >
-            <BarChart3 size={20} />
-            <span>{t.attendanceReports}</span>
+            <BarChart3 size={20} className="flex-shrink-0" />
+            <span className={`transition-opacity duration-300 leading-none opacity-100 w-full font-bold truncate`}>{t.attendanceReports}</span>
           </button>
         </nav>
 
@@ -256,12 +298,12 @@ export default function TeacherLiveAttendance() {
           </div>
           <button 
             onClick={handleLogout}
-            className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg transition ${
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 h-10 ${
               isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
             }`}
           >
-            <LogOut size={18} />
-            <span>{t.logout}</span>
+            <LogOut size={18} className="flex-shrink-0" />
+            <span className={`transition-opacity duration-300 leading-none opacity-100 w-full`}>{t.logout}</span>
           </button>
         </div>
       </aside>
@@ -320,14 +362,14 @@ export default function TeacherLiveAttendance() {
               }`}>{t.courseInfo}</h2>
               <p className={`text-xs sm:text-sm mb-4 sm:mb-6 ${
                 isDarkMode ? 'text-gray-400' : 'text-gray-600'
-              }`}>Yüz tanıma sistemi ile otomatik yoklama alın</p>
+              }`}>{t.courseSubtitle}</p>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
                 {/* Course Selection */}
                 <div>
                   <label className={`block text-sm font-bold mb-3 ${
                     isDarkMode ? 'text-gray-300' : 'text-gray-900'
-                  }`}>Ders</label>
+                  }`}>{t.courseLabel}</label>
                   <div className="relative">
                     <button
                       onClick={() => setShowCourseDropdown(!showCourseDropdown)}
@@ -337,7 +379,7 @@ export default function TeacherLiveAttendance() {
                           : 'bg-gray-50 border-gray-300 text-gray-900 hover:border-gray-400'
                       } focus:ring-2 focus:outline-none`}
                     >
-                      <span className="text-sm">{courses.find(c => c.id === selectedCourse)?.name || 'Ders seçiniz'}</span>
+                      <span className="text-sm">{courses.find(c => c.id === selectedCourse)?.id} - {t[courses.find(c => c.id === selectedCourse)?.nameKey as keyof typeof t] || 'Ders seçiniz'}</span>
                       <svg className={`w-4 h-4 transition-transform flex-shrink-0 ${showCourseDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                       </svg>
@@ -360,7 +402,7 @@ export default function TeacherLiveAttendance() {
                                 : isDarkMode ? 'hover:bg-gray-600 text-white' : 'hover:bg-gray-100 text-gray-900'
                             }`}
                           >
-                            <span>{course.name}</span>
+                            <span>{course.id} - {t[course.nameKey as keyof typeof t]}</span>
                             {selectedCourse === course.id && <Check size={18} />}
                           </button>
                         ))}
@@ -396,7 +438,7 @@ export default function TeacherLiveAttendance() {
                     title="Manual Attendance"
                   >
                     <Users size={18} />
-                    {language === 'TR' ? 'Manuel Yoklama Ekle' : 'Manual Attendance'}
+                    {t.manualAttendance}
                   </button>
                 </div>
 
@@ -407,7 +449,7 @@ export default function TeacherLiveAttendance() {
                       isDarkMode ? 'bg-green-900/30 text-green-300' : 'bg-green-100 text-green-700'
                     }`}>
                       <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></div>
-                      {language === 'TR' ? 'Canlı' : 'Live'}
+                      {t.liveIndicator}
                     </div>
                   )}
                 </div>
@@ -462,7 +504,7 @@ export default function TeacherLiveAttendance() {
                         isDarkMode ? 'bg-green-900/30 text-green-300' : 'bg-green-100 text-green-700'
                       }`}>
                         <Check size={18} />
-                        Yüz tanıma aktif - Öğrenciler kamera karşısına gelebilir
+                        {t.faceRecognitionActive}
                       </div>
                     )}
                   </div>
@@ -501,7 +543,7 @@ export default function TeacherLiveAttendance() {
                             </p>
                           )}
                           <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                            {student.time}
+                            %{student.confidence} {t.confidenceRate}
                           </p>
                         </div>
                         {student.status === 'present' ? (
@@ -544,7 +586,7 @@ export default function TeacherLiveAttendance() {
             <div className="flex items-center justify-between mb-4">
               <h2 className={`text-xl font-bold ${
                 isDarkMode ? 'text-white' : 'text-gray-800'
-              }`}>Manuel Yoklama Ekle</h2>
+              }`}>{t.manualAttendanceTitle}</h2>
               <button
                 onClick={() => {
                   setShowManualAttendanceModal(false);
@@ -560,12 +602,12 @@ export default function TeacherLiveAttendance() {
 
             <p className={`text-sm mb-4 ${
               isDarkMode ? 'text-gray-400' : 'text-gray-600'
-            }`}>Tanınamayan öğrenci için manuel olarak yoklama alınız</p>
+            }`}>{t.manualAttendanceDescription}</p>
 
             <div className="mb-4">
               <label className={`block text-sm font-semibold mb-2 ${
                 isDarkMode ? 'text-gray-300' : 'text-gray-700'
-              }`}>Öğrenci Numarası</label>
+              }`}>{t.studentNumber}</label>
               <input
                 type="text"
                 value={manualStudentId}
@@ -583,7 +625,7 @@ export default function TeacherLiveAttendance() {
               isDarkMode ? 'bg-yellow-900/20 text-yellow-300' : 'bg-yellow-100 text-yellow-700'
             }`}>
               <AlertCircle size={18} className="flex-shrink-0 mt-0.5" />
-              <p className="text-sm">Bu yoklama "Manuel" olarak işaretlenecektir</p>
+              <p className="text-sm">{t.manualAttendanceNote}</p>
             </div>
 
             <div className="flex gap-3">
@@ -598,7 +640,7 @@ export default function TeacherLiveAttendance() {
                     : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
                 }`}
               >
-                İptal
+                {t.cancel}
               </button>
               <button
                 onClick={() => {
@@ -613,7 +655,7 @@ export default function TeacherLiveAttendance() {
                 }`}
                 disabled={!manualStudentId.trim()}
               >
-                Yoklama Ekle
+                {t.addManualAttendance}
               </button>
             </div>
           </div>

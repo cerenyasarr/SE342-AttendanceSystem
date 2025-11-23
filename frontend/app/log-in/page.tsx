@@ -13,10 +13,9 @@ const translations = {
     enterCredentials: "Sisteme erişmek için bilgilerinizi girin",
     username: "Kullanıcı Adı / Öğrenci Numarası",
     password: "Şifre",
-    usernamePlaceholder: "Örn: admin, emreolca, 2024001",
+    usernamePlaceholder: "Örn: emreolca, 2024001",
     passwordPlaceholder: "••••••••",
     demoAccounts: "Demo Hesaplar:",
-    admin: "Admin: admin / admin",
     instructor: "Öğretmen: emreolca / emreolca",
     student: "Öğrenci: 2024001 / herhangi",
     lightMode: "Açık Tema",
@@ -29,10 +28,9 @@ const translations = {
     enterCredentials: "Enter your credentials to access the system",
     username: "Username / Student ID",
     password: "Password",
-    usernamePlaceholder: "Ex: admin, instructor, 2024001",
+    usernamePlaceholder: "Ex: instructor, 2024001",
     passwordPlaceholder: "••••••••",
     demoAccounts: "Demo Accounts:",
-    admin: "Admin: admin / admin",
     instructor: "Instructor: emreolca / emreolca",
     student: "Student: 2024001 / any",
     lightMode: "Light Mode",
@@ -80,12 +78,6 @@ export default function LoginPage() {
     e.preventDefault();
     
     // Demo hesaplar için kontrol
-    if (username === 'admin' && password === 'admin') {
-      // Admin için teacher-reports sayfasına yönlendir
-      window.location.href = '/?page=teacher-reports';
-      return;
-    }
-    
     if (username === 'emreolca' && password === 'emreolca') {
       // Instructor için teacher-live-attendance sayfasına yönlendir
       window.location.href = '/?page=teacher-live-attendance';
@@ -102,14 +94,8 @@ export default function LoginPage() {
     window.location.href = '/?page=teacher-live-attendance';
   };
 
-  const handleQuickLogin = (userType: 'admin' | 'instructor' | 'student') => {
-    if (userType === 'admin') {
-      setUsername('admin');
-      setPassword('admin');
-      setTimeout(() => {
-        window.location.href = '/?page=teacher-reports';
-      }, 100);
-    } else if (userType === 'instructor') {
+  const handleQuickLogin = (userType: 'instructor' | 'student') => {
+    if (userType === 'instructor') {
       setUsername('emreolca');
       setPassword('emreolca');
       setTimeout(() => {
@@ -168,7 +154,6 @@ export default function LoginPage() {
             alt="Maltepe University Logo" 
             width={120}
             height={105}
-            className="sm:w-40 sm:h-35"
             priority
             className={`transition-all ${isDarkMode ? 'filter drop-shadow-lg' : ''} w-24 h-20 sm:w-40 sm:h-35`}
           />
@@ -269,16 +254,6 @@ export default function LoginPage() {
             isDarkMode ? 'text-purple-300' : 'text-purple-800'
           }`}>{t.demoAccounts}</h3>
           <div className="space-y-1.5 sm:space-y-2">
-            <button
-              onClick={() => handleQuickLogin('admin')}
-              className={`w-full text-left px-3 py-2 rounded-lg transition-all text-xs font-mono ${
-                isDarkMode 
-                  ? 'bg-gray-600/50 hover:bg-gray-600 text-gray-200 hover:text-white' 
-                  : 'bg-white hover:bg-purple-100 text-gray-700 hover:text-purple-800'
-              } border ${isDarkMode ? 'border-gray-600' : 'border-purple-200'}`}
-            >
-              • {t.admin}
-            </button>
             <button
               onClick={() => handleQuickLogin('instructor')}
               className={`w-full text-left px-3 py-2 rounded-lg transition-all text-xs font-mono ${

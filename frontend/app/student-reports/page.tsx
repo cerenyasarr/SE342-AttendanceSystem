@@ -12,7 +12,10 @@ import {
   XCircle, 
   TrendingUp,
   Menu, 
-  X 
+  X,
+  Video,
+  UserPlus,
+  BarChart3
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -20,7 +23,7 @@ import Image from 'next/image';
 const translations = {
   TR: {
     title: "Yoklama Panom",
-    subtitle: "Kişisel yoklama kayıtlarınızı görüntüleyin (FR-11)",
+    subtitle: "Kişisel yoklama kayıtlarınızı görüntüleyin",
     totalSessions: "Toplam Oturum",
     present: "Var",
     absent: "Yok",
@@ -30,11 +33,22 @@ const translations = {
     welcome: "Hoş geldiniz,",
     student: "Öğrenci",
     studentAccount: "Öğrenci Hesabı",
-    logOut: "Çıkış Yap"
+    logOut: "Çıkış Yap",
+    liveAttendance: "Canlı Yoklama",
+    studentRegistration: "Öğrenci Kayıt",
+    attendanceReports: "Yoklama Raporları",
+    universityName: "Maltepe Üniversitesi",
+    systemName: "Otomatik Yoklama Sistemi",
+    instructor: "Öğretmen",
+    // Course names for TR
+    algorithms: "Algoritma ve Programlama I",
+    dataStructures: "Veri Yapıları",
+    oop: "Nesne Yönelimli Programlama",
+    database: "Veritabanı Yönetim Sistemleri",
   },
   EN: {
     title: "My Attendance Dashboard",
-    subtitle: "View your personal attendance records (FR-11)",
+    subtitle: "View your personal attendance records",
     totalSessions: "Total Sessions",
     present: "Present",
     absent: "Absent",
@@ -44,7 +58,18 @@ const translations = {
     welcome: "Welcome,",
     student: "Student",
     studentAccount: "Student Account",
-    logOut: "Log Out"
+    logOut: "Log Out",
+    liveAttendance: "Live Attendance",
+    studentRegistration: "Student Registration",
+    attendanceReports: "Attendance Reports",
+    universityName: "Maltepe University",
+    systemName: "Automatic Attendance System",
+    instructor: "Teacher",
+    // Course names for EN
+    algorithms: "Algorithms and Programming I",
+    dataStructures: "Data Structures",
+    oop: "Object Oriented Programming",
+    database: "Database Management Systems",
   }
 };
 
@@ -57,10 +82,10 @@ const summaryCards = [
 ];
 
 const courseAttendanceData = [
-  { code: 'CEN101', name: 'Algorithms and Programming I', attended: 3, total: 3, percentage: 100 },
-  { code: 'CSE102', name: 'Data Structures', attended: 1, total: 2, percentage: 50 },
-  { code: 'CSE201', name: 'Object Oriented Programming', attended: 1, total: 2, percentage: 50 },
-  { code: 'CSE301', name: 'Database Management Systems', attended: 1, total: 1, percentage: 100 },
+  { code: 'CEN101', nameKey: 'algorithms', attended: 3, total: 3, percentage: 100 },
+  { code: 'CSE102', nameKey: 'dataStructures', attended: 1, total: 2, percentage: 50 },
+  { code: 'CSE201', nameKey: 'oop', attended: 1, total: 2, percentage: 50 },
+  { code: 'CSE301', nameKey: 'database', attended: 1, total: 1, percentage: 100 },
 ];
 
 export default function StudentReportsPage() {
@@ -104,6 +129,12 @@ export default function StudentReportsPage() {
     }
   };
 
+  const navigateToPage = (page: string) => {
+    if (typeof window !== 'undefined') {
+      window.location.href = `/?page=${page}`;
+    }
+  };
+
   if (!mounted) return null;
 
   const darkCardBg = isDarkMode ? "bg-gray-800" : "bg-white";
@@ -128,7 +159,7 @@ export default function StudentReportsPage() {
       )}
       
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-48' : 'w-20'} hidden lg:flex fixed lg:static h-full lg:h-auto transition-all duration-300 ${
+      <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} hidden lg:flex fixed lg:static max-h-screen lg:max-h-none overflow-y-auto lg:overflow-y-visible transition-all duration-300 ${
         isDarkMode ? 'bg-gray-700' : 'bg-gray-600'
       } text-white flex-col p-4 z-50`}>
         {/* Logo and Title */}
@@ -141,37 +172,66 @@ export default function StudentReportsPage() {
             priority
             className="flex-shrink-0"
           />
-          <div className={`text-sm transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>
-            <p className="font-bold whitespace-nowrap">Maltepe Üniversitesi</p>
-            <p className="text-xs opacity-80 whitespace-nowrap">Automatic Attendance System</p>
+          <div className={`text-sm transition-opacity duration-300 overflow-hidden ${sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0'}`}>
+            <p className="font-bold whitespace-nowrap">{t.universityName}</p>
+            <p className="text-xs opacity-80 whitespace-nowrap">{t.systemName}</p>
           </div>
         </div>
 
         {/* Navigation Items */}
-        <nav className="flex-1 space-y-2">
-          <div className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-            isDarkMode ? 'bg-gray-800' : 'bg-gray-700'
-          }`}>
-            <LayoutDashboard size={20} className="flex-shrink-0" />
-            <span className={`font-semibold transition-opacity duration-300 whitespace-nowrap ${sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>{t.title}</span>
-          </div>
-        </nav>
+        <div className="flex-1 space-y-2">
+          <button
+            onClick={() => navigateToPage('teacher-live-attendance')}
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
+              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+            }`}
+          >
+            <Video size={20} className="flex-shrink-0" />
+            <span className={`transition-opacity duration-300 leading-none font-bold ${
+              sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'
+            }`}>
+              {t.liveAttendance}
+            </span>
+          </button>
+
+          <button
+            onClick={() => navigateToPage('student-registration')}
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
+              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+            }`}
+          >
+            <UserPlus size={20} className="flex-shrink-0" />
+            <span className={`transition-opacity duration-300 leading-none font-bold ${sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'}`}>{t.studentRegistration}</span>
+          </button>
+          <button
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 h-10 ${
+              isDarkMode ? 'bg-gray-800' : 'bg-gray-700'
+            }`}
+          >
+            <BarChart3 size={20} className="flex-shrink-0" />
+            <span className={`transition-opacity duration-300 leading-none font-bold ${
+              sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'
+            }`}>
+              {t.attendanceReports}
+            </span>
+          </button>
+        </div>
 
         {/* Bottom Section */}
         <div className="space-y-2 border-t border-gray-500 pt-3 mt-auto">
-          <div className={`text-xs opacity-75 px-4 mb-2 transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}>
+          <div className={`text-xs opacity-75 px-4 mb-2 transition-opacity duration-300 ${sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 h-0 overflow-hidden'}`}>
             <p>{t.welcome}</p>
-            <p className="font-semibold">Student 2024001</p>
-            <p className="text-xs opacity-60">{t.studentAccount}</p>
+            <p className="font-semibold">Dr. Emre Olca</p>
+            <p className="text-xs opacity-60">{t.instructor}</p>
           </div>
           <button 
             onClick={handleLogout}
-            className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg transition ${
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 h-10 ${
               isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
             }`}
           >
             <LogOut size={18} className="flex-shrink-0" />
-            <span className={`transition-opacity duration-300 whitespace-nowrap ${sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>{t.logOut}</span>
+            <span className={`transition-opacity duration-300 leading-none ${sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'}`}>{t.logOut}</span>
           </button>
         </div>
       </aside>
@@ -190,18 +250,36 @@ export default function StudentReportsPage() {
             priority
           />
           <div className="text-sm">
-            <p className="font-bold">Maltepe Üniversitesi</p>
-            <p className="text-xs opacity-80">Automatic Attendance System</p>
+            <p className="font-bold">{t.universityName}</p>
+            <p className="text-xs opacity-80">{t.systemName}</p>
           </div>
         </div>
 
         {/* Navigation Items */}
         <nav className="flex-1 space-y-2">
-          <div className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+          <button
+            onClick={() => navigateToPage('teacher-live-attendance')}
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
+              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+            }`}
+          >
+            <Video size={20} className="flex-shrink-0" />
+            <span className={`transition-opacity duration-300 leading-none opacity-100 w-full font-bold truncate`}>{t.liveAttendance}</span>
+          </button>
+          <button
+            onClick={() => navigateToPage('student-registration')}
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
+              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+            }`}
+          >
+            <UserPlus size={20} className="flex-shrink-0" />
+            <span className={`transition-opacity duration-300 leading-none opacity-100 w-full font-bold truncate`}>{t.studentRegistration}</span>
+          </button>
+          <div className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 h-10 ${
             isDarkMode ? 'bg-gray-800' : 'bg-gray-700'
           }`}>
-            <LayoutDashboard size={20} />
-            <span className="font-semibold">{t.title}</span>
+            <BarChart3 size={20} className="flex-shrink-0" />
+            <span className={`transition-opacity duration-300 leading-none opacity-100 w-full font-bold truncate`}>{t.attendanceReports}</span>
           </div>
         </nav>
 
@@ -209,17 +287,17 @@ export default function StudentReportsPage() {
         <div className="space-y-2 border-t border-gray-500 pt-3 mt-auto">
           <div className="text-xs opacity-75 px-4 mb-2">
             <p>{t.welcome}</p>
-            <p className="font-semibold">Student 2024001</p>
-            <p className="text-xs opacity-60">{t.studentAccount}</p>
+            <p className="font-semibold">Dr. Emre Olca</p>
+            <p className="text-xs opacity-60">{t.instructor}</p>
           </div>
           <button 
             onClick={handleLogout}
-            className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg transition ${
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 h-10 ${
               isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
             }`}
           >
-            <LogOut size={18} />
-            <span>{t.logOut}</span>
+            <LogOut size={18} className="flex-shrink-0" />
+            <span className={`transition-opacity duration-300 leading-none opacity-100 w-full`}>{t.logOut}</span>
           </button>
         </div>
       </aside>
@@ -303,7 +381,7 @@ export default function StudentReportsPage() {
                   
                   <div className="flex-1">
                     <h4 className={`font-bold ${textPrimary} text-base lg:text-lg mb-1`}>
-                      <span className={accentColor}>{course.code}</span> - {course.name}
+                      <span className={accentColor}>{course.code}</span> - {t[course.nameKey as keyof typeof t]}
                     </h4>
                     <p className={`text-sm ${textSecondary} font-medium`}>
                       {course.attended} / {course.total} {t.sessions}
