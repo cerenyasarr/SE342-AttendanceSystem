@@ -23,7 +23,7 @@ export default function TeacherLiveAttendance() {
   ];
 
   const students = [
-    { id: '213332', name: 'Student 1', confidence: 90, status: 'present' },
+    { id: '213332', name: 'Ayşe Demir', id2: '2024005', confidence: 90, status: 'present' },
     { id: 'Can Öztürk', name: 'Can Öztürk', id2: '2024005', confidence: 88, status: 'present' },
   ];
 
