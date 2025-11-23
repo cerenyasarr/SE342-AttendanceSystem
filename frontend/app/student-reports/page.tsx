@@ -23,7 +23,7 @@ import Image from 'next/image';
 const translations = {
   TR: {
     title: "Yoklama Panom",
-    subtitle: "Kişisel yoklama kayıtlarınızı görüntüleyin",
+    subtitle: "Kişisel yoklama kayıtlarınızı görüntüleyin.",
     totalSessions: "Toplam Oturum",
     present: "Var",
     absent: "Yok",
@@ -180,28 +180,11 @@ export default function StudentReportsPage() {
 
         {/* Navigation Items */}
         <div className="flex-1 space-y-2">
-          <button
-            onClick={() => navigateToPage('teacher-live-attendance')}
-            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
-              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
-            }`}
-          >
-            <Video size={20} className="flex-shrink-0" />
-            <span className={`transition-opacity duration-300 leading-none font-bold ${
-              sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'
-            }`}>
-              {t.liveAttendance}
-            </span>
-          </button>
+          
 
           <button
-            onClick={() => navigateToPage('student-registration')}
-            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
-              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
-            }`}
+           
           >
-            <UserPlus size={20} className="flex-shrink-0" />
-            <span className={`transition-opacity duration-300 leading-none font-bold ${sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'}`}>{t.studentRegistration}</span>
           </button>
           <button
             className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 h-10 ${
@@ -221,8 +204,8 @@ export default function StudentReportsPage() {
         <div className="space-y-2 border-t border-gray-500 pt-3 mt-auto">
           <div className={`text-xs opacity-75 px-4 mb-2 transition-opacity duration-300 ${sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 h-0 overflow-hidden'}`}>
             <p>{t.welcome}</p>
-            <p className="font-semibold">Dr. Emre Olca</p>
-            <p className="text-xs opacity-60">{t.instructor}</p>
+            <p className="font-semibold">Can Öztürk</p>
+            <p className="text-xs opacity-60">{t.student}</p>
           </div>
           <button 
             onClick={handleLogout}
