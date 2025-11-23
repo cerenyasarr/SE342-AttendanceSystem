@@ -57,7 +57,7 @@ const summaryCards = [
 ];
 
 const courseAttendanceData = [
-  { code: 'CSE101', name: 'Algorithms and Programming I', attended: 3, total: 3, percentage: 100 },
+  { code: 'CEN101', name: 'Algorithms and Programming I', attended: 3, total: 3, percentage: 100 },
   { code: 'CSE102', name: 'Data Structures', attended: 1, total: 2, percentage: 50 },
   { code: 'CSE201', name: 'Object Oriented Programming', attended: 1, total: 2, percentage: 50 },
   { code: 'CSE301', name: 'Database Management Systems', attended: 1, total: 1, percentage: 100 },
