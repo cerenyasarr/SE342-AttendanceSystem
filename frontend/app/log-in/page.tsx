@@ -134,51 +134,52 @@ export default function LoginPage() {
     }`}>
       
       {/* Top Right Icons */}
-      <div className="absolute top-4 right-4 flex items-center gap-3">
+      <div className="absolute top-2 right-2 sm:top-4 sm:right-4 flex items-center gap-2 sm:gap-3">
         <button 
           onClick={toggleLanguage}
-          className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-sm transition ${
+          className={`flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 rounded-md text-xs sm:text-sm transition ${
             isDarkMode
               ? 'bg-white/10 hover:bg-white/20 text-white'
               : 'bg-black/10 hover:bg-black/20 text-gray-800'
           }`}
         >
-          <Globe size={16} />
-          <span>{language.toUpperCase()}</span>
+          <Globe size={14} className="sm:w-4 sm:h-4" />
+          <span className="hidden sm:inline">{language.toUpperCase()}</span>
         </button>
         <button 
           onClick={toggleDarkMode}
-          className={`p-2 rounded-full transition ${
+          className={`p-1.5 sm:p-2 rounded-full transition ${
             isDarkMode
               ? 'bg-white/10 hover:bg-white/20 text-yellow-300'
               : 'bg-black/10 hover:bg-black/20 text-gray-800'
           }`}
           title={isDarkMode ? t.lightMode : t.darkMode}
         >
-          {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
+          {isDarkMode ? <Sun size={14} className="sm:w-4 sm:h-4" /> : <Moon size={14} className="sm:w-4 sm:h-4" />}
         </button>
       </div>
 
       {/* Logo and Title Area */}
-      <div className="text-center mb-8">
+      <div className="text-center mb-4 sm:mb-8 px-4">
         {/* Logo Image */}
-        <div className="mx-auto mb-4 flex items-center justify-center">
+        <div className="mx-auto mb-2 sm:mb-4 flex items-center justify-center">
           <Image 
             src="/maltepe-uni-logo.svg" 
             alt="Maltepe University Logo" 
-            width={160}
-            height={140}
+            width={120}
+            height={105}
+            className="sm:w-40 sm:h-35"
             priority
-            className={`transition-all ${isDarkMode ? 'filter drop-shadow-lg' : ''}`}
+            className={`transition-all ${isDarkMode ? 'filter drop-shadow-lg' : ''} w-24 h-20 sm:w-40 sm:h-35`}
           />
         </div>
         
-        <h1 className={`text-3xl font-bold mb-1 tracking-wide transition-colors ${
+        <h1 className={`text-2xl sm:text-3xl font-bold mb-1 tracking-wide transition-colors ${
           isDarkMode ? 'text-white' : 'text-gray-800'
         }`}>
           {t.title}
         </h1>
-        <p className={`text-sm font-light opacity-80 transition-colors ${
+        <p className={`text-xs sm:text-sm font-light opacity-80 transition-colors ${
           isDarkMode ? 'text-gray-300' : 'text-gray-600'
         }`}>
           {t.subtitle}
@@ -186,23 +187,23 @@ export default function LoginPage() {
       </div>
 
       {/* Login Card */}
-      <div className={`w-full max-w-[450px] p-8 rounded-2xl shadow-2xl mx-4 transition-colors ${
+      <div className={`w-full max-w-[450px] p-4 sm:p-8 rounded-xl sm:rounded-2xl shadow-2xl mx-4 transition-colors ${
         isDarkMode
           ? 'bg-gray-800 border border-gray-700'
           : 'bg-white border border-gray-100'
       }`}>
-        <div className="mb-6">
-          <h2 className={`text-xl font-bold transition-colors ${
+        <div className="mb-4 sm:mb-6">
+          <h2 className={`text-lg sm:text-xl font-bold transition-colors ${
             isDarkMode ? 'text-white' : 'text-gray-800'
           }`}>{t.logIn}</h2>
-          <p className={`text-sm mt-1 transition-colors ${
+          <p className={`text-xs sm:text-sm mt-1 transition-colors ${
             isDarkMode ? 'text-gray-400' : 'text-gray-500'
           }`}>
             {t.enterCredentials}
           </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-5">
+        <form onSubmit={handleLogin} className="space-y-4 sm:space-y-5">
           {/* Username Input */}
           <div>
             <label className={`block text-sm font-semibold mb-2 transition-colors ${
@@ -259,15 +260,15 @@ export default function LoginPage() {
         </form>
 
         {/* Demo Accounts Box */}
-        <div className={`mt-8 rounded-xl p-4 border transition-colors ${
+        <div className={`mt-4 sm:mt-8 rounded-lg sm:rounded-xl p-3 sm:p-4 border transition-colors ${
           isDarkMode
             ? 'bg-gray-700/50 border-purple-600/30'
             : 'bg-purple-50 border border-purple-100'
         }`}>
-          <h3 className={`font-semibold text-sm mb-3 transition-colors ${
+          <h3 className={`font-semibold text-xs sm:text-sm mb-2 sm:mb-3 transition-colors ${
             isDarkMode ? 'text-purple-300' : 'text-purple-800'
           }`}>{t.demoAccounts}</h3>
-          <div className="space-y-2">
+          <div className="space-y-1.5 sm:space-y-2">
             <button
               onClick={() => handleQuickLogin('admin')}
               className={`w-full text-left px-3 py-2 rounded-lg transition-all text-xs font-mono ${

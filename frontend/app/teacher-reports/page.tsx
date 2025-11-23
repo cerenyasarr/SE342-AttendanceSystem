@@ -210,6 +210,12 @@ export default function TeacherReportsPage() {
     }
   };
 
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      window.location.href = '/?page=log-in';
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const baseClasses = "px-3 py-1 rounded-full text-xs font-semibold";
     switch (status) {
@@ -230,10 +236,18 @@ export default function TeacherReportsPage() {
     <div className={`min-h-screen flex transition-colors duration-300 ${
       isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
     }`}>
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-48' : 'w-20'} transition-all duration-300 ${
+      <aside className={`${sidebarOpen ? 'w-48 lg:w-48' : 'w-0 lg:w-20'} fixed lg:static h-full lg:h-auto transition-all duration-300 ${
         isDarkMode ? 'bg-gray-700' : 'bg-gray-600'
-      } text-white flex flex-col p-4`}>
+      } text-white flex flex-col p-4 z-50 overflow-hidden`}>
         {/* Logo and Title */}
         <div className="flex items-center gap-3 mb-8">
           <Image 
@@ -288,9 +302,12 @@ export default function TeacherReportsPage() {
               <p className="text-xs opacity-60">{t.instructor}</p>
             </div>
           )}
-          <button className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg transition ${
-            isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
-          }`}>
+          <button 
+            onClick={handleLogout}
+            className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg transition ${
+              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+            }`}
+          >
             <LogOut size={18} />
             {sidebarOpen && <span>{t.logOut}</span>}
           </button>
@@ -302,45 +319,45 @@ export default function TeacherReportsPage() {
         {/* Top Bar */}
         <div className={`${
           isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-        } border-b px-6 py-4 flex items-center justify-between`}>
-          <div className="flex items-center gap-4">
+        } border-b px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between`}>
+          <div className="flex items-center gap-2 sm:gap-4">
             <button 
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className={`p-2 rounded-lg transition ${
                 isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
               }`}
             >
-              <Menu size={24} className={isDarkMode ? 'text-white' : 'text-gray-800'} />
+              <Menu size={20} className={`sm:w-6 sm:h-6 ${isDarkMode ? 'text-white' : 'text-gray-800'}`} />
             </button>
-            <h1 className={`text-2xl font-bold ${
+            <h1 className={`text-lg sm:text-xl lg:text-2xl font-bold ${
               isDarkMode ? 'text-white' : 'text-gray-800'
             }`}>{t.title}</h1>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button 
               onClick={toggleLanguage}
-              className={`p-2 rounded-lg transition flex items-center gap-1 ${
+              className={`p-1.5 sm:p-2 rounded-lg transition flex items-center gap-1 ${
                 isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'
               }`}
               title="Change Language"
             >
-              <Globe size={20} className={isDarkMode ? 'text-white' : 'text-gray-800'} />
-              <span className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>{language}</span>
+              <Globe size={16} className={`sm:w-5 sm:h-5 ${isDarkMode ? 'text-white' : 'text-gray-800'}`} />
+              <span className={`text-xs sm:text-sm font-medium hidden sm:inline ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>{language}</span>
             </button>
             <button 
               onClick={toggleDarkMode}
-              className={`p-2 rounded-lg transition ${
+              className={`p-1.5 sm:p-2 rounded-lg transition ${
                 isDarkMode ? 'bg-gray-700 hover:bg-gray-600 text-yellow-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
               }`}
               title={isDarkMode ? 'Light Mode' : 'Dark Mode'}
             >
-              {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+              {isDarkMode ? <Sun size={16} className="sm:w-5 sm:h-5" /> : <Moon size={16} className="sm:w-5 sm:h-5" />}
             </button>
           </div>
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 p-6 overflow-auto">
+        <div className="flex-1 p-3 sm:p-6 overflow-auto">
           <div className="max-w-7xl mx-auto">
           
             {/* Header */}
