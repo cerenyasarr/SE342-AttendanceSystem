@@ -124,7 +124,6 @@ const mockAttendanceData = [
   { id: 7, studentNumber: '2024002', name: 'Ayşe', surname: 'Demir', department: 'CSE', class: '1', date: '2024-11-19', status: 'Present', time: '09:12' },
   { id: 8, studentNumber: '2024003', name: 'Mehmet', surname: 'Kaya', department: 'CSE', class: '1', date: '2024-11-19', status: 'Present', time: '09:20' },
   { id: 9, studentNumber: '2024004', name: 'Zeynep', surname: 'Şahin', department: 'CSE', class: '1', date: '2024-11-19', status: 'Absent', time: '-' },
-  { id: 10, studentNumber: '2024005', name: 'Ali', surname: 'Çelik', department: 'CSE', class: '1', date: '2024-11-19', status: 'Present', time: '09:15' },
 ];
 
 export default function TeacherReportsPage() {
@@ -237,7 +236,7 @@ export default function TeacherReportsPage() {
   if (!mounted) return null;
 
   return (
-    <div className={`min-h-screen flex transition-colors duration-300 ${
+    <div className={`h-screen flex overflow-hidden transition-colors duration-300 ${
       isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
     }`}>
       {/* Mobile Overlay */}
@@ -248,8 +247,8 @@ export default function TeacherReportsPage() {
         />
       )}
       
-      {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} hidden lg:flex fixed lg:static max-h-screen lg:max-h-none overflow-y-auto lg:overflow-y-visible transition-all duration-300 ${
+      {/* Sidebar - Web */}
+      <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} hidden lg:flex fixed lg:static h-full transition-all duration-300 ${
         isDarkMode ? 'bg-gray-700' : 'bg-gray-600'
       } text-white flex-col p-4 z-50`}>
         {/* Logo and Title */}
@@ -327,9 +326,9 @@ export default function TeacherReportsPage() {
       </aside>
       
       {/* Mobile Sidebar */}
-      <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:hidden fixed h-full w-48 transition-transform duration-300 ${
+      <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:hidden fixed h-full w-64 transition-transform duration-300 ${
         isDarkMode ? 'bg-gray-700' : 'bg-gray-600'
-      } text-white flex flex-col p-4 z-50`}>
+      } text-white flex flex-col p-4 z-50 shadow-2xl`}>
         {/* Logo and Title */}
         <div className="flex items-center gap-3 mb-8">
           <Image 
@@ -393,11 +392,11 @@ export default function TeacherReportsPage() {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col h-full overflow-hidden relative">
         {/* Top Bar */}
         <div className={`${
           isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-        } border-b px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between`}>
+        } border-b px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between shrink-0`}>
           <div className="flex items-center gap-2 sm:gap-4">
             <button 
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -435,8 +434,8 @@ export default function TeacherReportsPage() {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 p-3 sm:p-6 overflow-auto">
-          <div className="max-w-7xl mx-auto">
+        <div className="flex-1 p-3 sm:p-6 overflow-y-auto overflow-x-hidden">
+          <div className="max-w-7xl mx-auto pb-20">
           
             {/* Header */}
             <div className="mb-6">
@@ -689,4 +688,3 @@ export default function TeacherReportsPage() {
     </div>
   );
 }
-
