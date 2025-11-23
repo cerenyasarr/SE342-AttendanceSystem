@@ -128,9 +128,58 @@ export default function StudentReportsPage() {
       )}
       
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-48 lg:w-48' : 'w-0 lg:w-20'} fixed lg:static h-full lg:h-auto transition-all duration-300 ${
+      <aside className={`${sidebarOpen ? 'w-48' : 'w-20'} hidden lg:flex fixed lg:static h-full lg:h-auto transition-all duration-300 ${
         isDarkMode ? 'bg-gray-700' : 'bg-gray-600'
-      } text-white flex flex-col p-4 z-50 overflow-hidden`}>
+      } text-white flex-col p-4 z-50`}>
+        {/* Logo and Title */}
+        <div className="flex items-center gap-3 mb-8 min-w-0">
+          <Image 
+            src="/maltepe-uni-logo.svg" 
+            alt="Maltepe University Logo" 
+            width={40}
+            height={40}
+            priority
+            className="flex-shrink-0"
+          />
+          <div className={`text-sm transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>
+            <p className="font-bold whitespace-nowrap">Maltepe Üniversitesi</p>
+            <p className="text-xs opacity-80 whitespace-nowrap">Automatic Attendance System</p>
+          </div>
+        </div>
+
+        {/* Navigation Items */}
+        <nav className="flex-1 space-y-2">
+          <div className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+            isDarkMode ? 'bg-gray-800' : 'bg-gray-700'
+          }`}>
+            <LayoutDashboard size={20} className="flex-shrink-0" />
+            <span className={`font-semibold transition-opacity duration-300 whitespace-nowrap ${sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>{t.title}</span>
+          </div>
+        </nav>
+
+        {/* Bottom Section */}
+        <div className="space-y-2 border-t border-gray-500 pt-3 mt-auto">
+          <div className={`text-xs opacity-75 px-4 mb-2 transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}>
+            <p>{t.welcome}</p>
+            <p className="font-semibold">Student 2024001</p>
+            <p className="text-xs opacity-60">{t.studentAccount}</p>
+          </div>
+          <button 
+            onClick={handleLogout}
+            className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg transition ${
+              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+            }`}
+          >
+            <LogOut size={18} className="flex-shrink-0" />
+            <span className={`transition-opacity duration-300 whitespace-nowrap ${sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>{t.logOut}</span>
+          </button>
+        </div>
+      </aside>
+      
+      {/* Mobile Sidebar */}
+      <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:hidden fixed h-full w-48 transition-transform duration-300 ${
+        isDarkMode ? 'bg-gray-700' : 'bg-gray-600'
+      } text-white flex flex-col p-4 z-50`}>
         {/* Logo and Title */}
         <div className="flex items-center gap-3 mb-8">
           <Image 
@@ -140,12 +189,10 @@ export default function StudentReportsPage() {
             height={40}
             priority
           />
-          {sidebarOpen && (
-            <div className="text-sm">
-              <p className="font-bold">Maltepe Üniversitesi</p>
-              <p className="text-xs opacity-80">Automatic Attendance System</p>
-            </div>
-          )}
+          <div className="text-sm">
+            <p className="font-bold">Maltepe Üniversitesi</p>
+            <p className="text-xs opacity-80">Automatic Attendance System</p>
+          </div>
         </div>
 
         {/* Navigation Items */}
@@ -154,19 +201,17 @@ export default function StudentReportsPage() {
             isDarkMode ? 'bg-gray-800' : 'bg-gray-700'
           }`}>
             <LayoutDashboard size={20} />
-            {sidebarOpen && <span className="font-semibold">{t.title}</span>}
+            <span className="font-semibold">{t.title}</span>
           </div>
         </nav>
 
         {/* Bottom Section */}
         <div className="space-y-2 border-t border-gray-500 pt-3 mt-auto">
-          {sidebarOpen && (
-            <div className="text-xs opacity-75 px-4 mb-2">
-              <p>{t.welcome}</p>
-              <p className="font-semibold">Student 2024001</p>
-              <p className="text-xs opacity-60">{t.studentAccount}</p>
-            </div>
-          )}
+          <div className="text-xs opacity-75 px-4 mb-2">
+            <p>{t.welcome}</p>
+            <p className="font-semibold">Student 2024001</p>
+            <p className="text-xs opacity-60">{t.studentAccount}</p>
+          </div>
           <button 
             onClick={handleLogout}
             className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg transition ${
@@ -174,7 +219,7 @@ export default function StudentReportsPage() {
             }`}
           >
             <LogOut size={18} />
-            {sidebarOpen && <span>{t.logOut}</span>}
+            <span>{t.logOut}</span>
           </button>
         </div>
       </aside>

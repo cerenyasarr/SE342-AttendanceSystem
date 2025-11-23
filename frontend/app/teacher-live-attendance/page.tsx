@@ -134,9 +134,76 @@ export default function TeacherLiveAttendance() {
       )}
       
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-48 lg:w-48' : 'w-0 lg:w-20'} fixed lg:static h-full lg:h-auto transition-all duration-300 ${
+      <aside className={`${sidebarOpen ? 'w-48' : 'w-20'} hidden lg:flex fixed lg:static h-full lg:h-auto transition-all duration-300 ${
         isDarkMode ? 'bg-gray-700' : 'bg-gray-600'
-      } text-white flex flex-col p-4 z-50 overflow-hidden`}>
+      } text-white flex-col p-4 z-50`}>
+        {/* Logo and Title */}
+        <div className="flex items-center gap-3 mb-8 min-w-0">
+          <Image 
+            src="/maltepe-uni-logo.svg" 
+            alt="Maltepe University Logo" 
+            width={40}
+            height={40}
+            priority
+            className="flex-shrink-0"
+          />
+          <div className={`text-sm transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>
+            <p className="font-bold whitespace-nowrap">Maltepe Üniversitesi</p>
+            <p className="text-xs opacity-80 whitespace-nowrap">Automatic Attendance System</p>
+          </div>
+        </div>
+
+        {/* Navigation Items */}
+        <nav className="flex-1 space-y-2">
+          <div className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+            isDarkMode ? 'bg-gray-800' : 'bg-gray-700'
+          }`}>
+            <Video size={20} className="flex-shrink-0" />
+            <span className={`font-semibold transition-opacity duration-300 whitespace-nowrap ${sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>{t.liveAttendance}</span>
+          </div>
+          <button
+            onClick={() => navigateToPage('student-registration')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition ${
+              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+            }`}
+          >
+            <UserPlus size={20} className="flex-shrink-0" />
+            <span className={`transition-opacity duration-300 whitespace-nowrap ${sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>{t.studentRegistration}</span>
+          </button>
+          <button
+            onClick={() => navigateToPage('teacher-reports')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition ${
+              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+            }`}
+          >
+            <BarChart3 size={20} className="flex-shrink-0" />
+            <span className={`transition-opacity duration-300 whitespace-nowrap ${sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>{t.attendanceReports}</span>
+          </button>
+        </nav>
+
+        {/* Bottom Section */}
+        <div className="space-y-2 border-t border-gray-500 pt-3 mt-auto">
+          <div className={`text-xs opacity-75 px-4 mb-2 transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}>
+            <p>{t.welcome}</p>
+            <p className="font-semibold">Dr. Emre Olca</p>
+            <p className="text-xs opacity-60">{t.teacher}</p>
+          </div>
+          <button 
+            onClick={handleLogout}
+            className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg transition ${
+              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+            }`}
+          >
+            <LogOut size={18} className="flex-shrink-0" />
+            <span className={`transition-opacity duration-300 whitespace-nowrap ${sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>{t.logout}</span>
+          </button>
+        </div>
+      </aside>
+      
+      {/* Mobile Sidebar */}
+      <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:hidden fixed h-full w-48 transition-transform duration-300 ${
+        isDarkMode ? 'bg-gray-700' : 'bg-gray-600'
+      } text-white flex flex-col p-4 z-50`}>
         {/* Logo and Title */}
         <div className="flex items-center gap-3 mb-8">
           <Image 
@@ -146,12 +213,10 @@ export default function TeacherLiveAttendance() {
             height={40}
             priority
           />
-          {sidebarOpen && (
-            <div className="text-sm">
-              <p className="font-bold">Maltepe Üniversitesi</p>
-              <p className="text-xs opacity-80">Automatic Attendance System</p>
-            </div>
-          )}
+          <div className="text-sm">
+            <p className="font-bold">Maltepe Üniversitesi</p>
+            <p className="text-xs opacity-80">Automatic Attendance System</p>
+          </div>
         </div>
 
         {/* Navigation Items */}
@@ -160,7 +225,7 @@ export default function TeacherLiveAttendance() {
             isDarkMode ? 'bg-gray-800' : 'bg-gray-700'
           }`}>
             <Video size={20} />
-            {sidebarOpen && <span className="font-semibold">{t.liveAttendance}</span>}
+            <span className="font-semibold">{t.liveAttendance}</span>
           </div>
           <button
             onClick={() => navigateToPage('student-registration')}
@@ -169,7 +234,7 @@ export default function TeacherLiveAttendance() {
             }`}
           >
             <UserPlus size={20} />
-            {sidebarOpen && <span>{t.studentRegistration}</span>}
+            <span>{t.studentRegistration}</span>
           </button>
           <button
             onClick={() => navigateToPage('teacher-reports')}
@@ -178,19 +243,17 @@ export default function TeacherLiveAttendance() {
             }`}
           >
             <BarChart3 size={20} />
-            {sidebarOpen && <span>{t.attendanceReports}</span>}
+            <span>{t.attendanceReports}</span>
           </button>
         </nav>
 
         {/* Bottom Section */}
         <div className="space-y-2 border-t border-gray-500 pt-3 mt-auto">
-          {sidebarOpen && (
-            <div className="text-xs opacity-75 px-4 mb-2">
-              <p>{t.welcome}</p>
-              <p className="font-semibold">Dr. Emre Olca</p>
-              <p className="text-xs opacity-60">{t.teacher}</p>
-            </div>
-          )}
+          <div className="text-xs opacity-75 px-4 mb-2">
+            <p>{t.welcome}</p>
+            <p className="font-semibold">Dr. Emre Olca</p>
+            <p className="text-xs opacity-60">{t.teacher}</p>
+          </div>
           <button 
             onClick={handleLogout}
             className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg transition ${
@@ -198,7 +261,7 @@ export default function TeacherLiveAttendance() {
             }`}
           >
             <LogOut size={18} />
-            {sidebarOpen && <span>{t.logout}</span>}
+            <span>{t.logout}</span>
           </button>
         </div>
       </aside>
