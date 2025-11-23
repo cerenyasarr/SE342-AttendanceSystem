@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, 
   Globe, 
   Moon, 
+  Sun,
   LogOut, 
   BookOpen, 
   CheckCircle2, 
@@ -13,14 +14,46 @@ import {
   Menu, 
   X 
 } from 'lucide-react';
+import Image from 'next/image';
+
+// Translations
+const translations = {
+  TR: {
+    title: "Yoklama Panom",
+    subtitle: "Kişisel yoklama kayıtlarınızı görüntüleyin (FR-11)",
+    totalSessions: "Toplam Oturum",
+    present: "Var",
+    absent: "Yok",
+    attendanceRate: "Yoklama Oranı",
+    courseAttendance: "Ders Yoklama Durumu",
+    sessions: "oturum",
+    welcome: "Hoş geldiniz,",
+    student: "Öğrenci",
+    studentAccount: "Öğrenci Hesabı",
+    logOut: "Çıkış Yap"
+  },
+  EN: {
+    title: "My Attendance Dashboard",
+    subtitle: "View your personal attendance records (FR-11)",
+    totalSessions: "Total Sessions",
+    present: "Present",
+    absent: "Absent",
+    attendanceRate: "Attendance Rate",
+    courseAttendance: "Course Attendance Status",
+    sessions: "sessions",
+    welcome: "Welcome,",
+    student: "Student",
+    studentAccount: "Student Account",
+    logOut: "Log Out"
+  }
+};
 
 // --- MOCK DATA ---
 const summaryCards = [
-  // Renkleri koyu temaya uygun hale getirdik (daha şeffaf ve açık tonlar)
-  { title: 'Total Sessions', value: '8', icon: BookOpen, color: 'bg-purple-900/30 text-purple-300' },
-  { title: 'Present', value: '6', icon: CheckCircle2, color: 'bg-green-900/30 text-green-300' },
-  { title: 'Absent', value: '2', icon: XCircle, color: 'bg-red-900/30 text-red-300' },
-  { title: 'Attendance Rate', value: '75%', icon: TrendingUp, color: 'bg-blue-900/30 text-blue-300' },
+  { titleKey: 'totalSessions', value: '8', icon: BookOpen, color: 'bg-purple-900/30 text-purple-300' },
+  { titleKey: 'present', value: '6', icon: CheckCircle2, color: 'bg-green-900/30 text-green-300' },
+  { titleKey: 'absent', value: '2', icon: XCircle, color: 'bg-red-900/30 text-red-300' },
+  { titleKey: 'attendanceRate', value: '75%', icon: TrendingUp, color: 'bg-blue-900/30 text-blue-300' },
 ];
 
 const courseAttendanceData = [
@@ -31,155 +64,192 @@ const courseAttendanceData = [
 ];
 
 export default function StudentReportsPage() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [language, setLanguage] = useState<'TR' | 'EN'>('EN');
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  // Koyu arka plan rengi (Login sayfasındaki kart rengine yakın)
-  const darkCardBg = "bg-[#1e293b]"; 
-  // Ana arka plan (Login sayfasındaki degradeye benzer koyu ton)
-  const mainBg = "bg-[#0f172a]"; 
-  // Vurgu rengi (Mor)
-  const accentColor = "text-[#bd5adf]";
+  const t = translations[language];
+
+  useEffect(() => {
+    setMounted(true);
+    const savedMode = localStorage.getItem('darkMode');
+    const savedLang = localStorage.getItem('language');
+    if (savedMode !== null) {
+      setIsDarkMode(JSON.parse(savedMode));
+    } else {
+      setIsDarkMode(window.matchMedia('(prefers-color-scheme: dark)').matches);
+    }
+    if (savedLang) {
+      const lang = savedLang.toUpperCase() === 'TR' ? 'TR' : 'EN';
+      setLanguage(lang);
+    }
+  }, []);
+
+  const toggleDarkMode = () => {
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    localStorage.setItem('darkMode', JSON.stringify(newMode));
+  };
+
+  const toggleLanguage = () => {
+    const newLang = language === 'TR' ? 'EN' : 'TR';
+    setLanguage(newLang);
+    localStorage.setItem('language', newLang.toLowerCase());
+  };
+
+  if (!mounted) return null;
+
+  const darkCardBg = isDarkMode ? "bg-gray-800" : "bg-white";
+  const mainBg = isDarkMode ? "bg-gray-900" : "bg-gray-50";
+  const sidebarBg = isDarkMode ? "bg-gray-700" : "bg-gray-600";
+  const accentColor = "text-purple-400";
+  const textPrimary = isDarkMode ? "text-white" : "text-gray-900";
+  const textSecondary = isDarkMode ? "text-gray-400" : "text-gray-600";
+  const borderColor = isDarkMode ? "border-gray-700" : "border-gray-200";
+  const hoverBg = isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100";
 
   return (
-    // Ana arka planı koyu yaptık ve metinleri açık renk yaptık
-    <div className={`flex min-h-screen ${mainBg} text-gray-200 font-sans relative`}>
-      
-      {/* --- MOBILE OVERLAY --- */}
-      {isSidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/60 z-40 lg:hidden backdrop-blur-sm"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
-
-      {/* --- SIDEBAR (Koyu Tema) --- */}
-      <aside 
-        className={`
-          fixed lg:static inset-y-0 left-0 z-50 w-72 ${darkCardBg} border-r border-gray-800 flex flex-col shrink-0 
-          transition-transform duration-300 ease-in-out
-          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        `}
-      >
-        
-        {/* Sidebar Header */}
-        <div className="p-6 flex items-center justify-between mb-6">
-           <div className="flex items-center gap-3">
-             {/* Logo kutusunu mor yaptık */}
-             <div className="bg-[#8e3c9e] w-10 h-10 rounded-lg flex items-center justify-center shadow-sm shrink-0">
-              <span className="text-xl font-bold text-white">M</span> 
-             </div>
-             <div>
-              <h1 className="text-lg font-bold leading-tight text-white">Maltepe Uni</h1>
-              <p className="text-xs text-gray-400 opacity-80">Attendance Sys</p>
-             </div>
-           </div>
-
-           <button 
-             onClick={() => setIsSidebarOpen(false)}
-             className="lg:hidden text-gray-400 hover:text-white transition"
-           >
-             <X size={24} />
-           </button>
+    <div className={`min-h-screen flex transition-colors duration-300 ${
+      isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
+    }`}>
+      {/* Sidebar */}
+      <aside className={`${sidebarOpen ? 'w-48' : 'w-20'} transition-all duration-300 ${
+        isDarkMode ? 'bg-gray-700' : 'bg-gray-600'
+      } text-white flex flex-col p-4`}>
+        {/* Logo and Title */}
+        <div className="flex items-center gap-3 mb-8">
+          <Image 
+            src="/maltepe-uni-logo.svg" 
+            alt="Maltepe University Logo" 
+            width={40}
+            height={40}
+            priority
+          />
+          {sidebarOpen && (
+            <div className="text-sm">
+              <p className="font-bold">Maltepe Üniversitesi</p>
+              <p className="text-xs opacity-80">Automatic Attendance System</p>
+            </div>
+          )}
         </div>
 
-        {/* Menu */}
-        <nav className="px-4 flex-1">
-          {/* Aktif menü elemanını mor arka planlı yaptık */}
-          <button className="w-full flex items-center gap-3 bg-[#8e3c9e] text-white px-4 py-3 rounded-xl font-semibold shadow-md transition-transform hover:scale-[1.02]">
+        {/* Navigation Items */}
+        <nav className="flex-1 space-y-2">
+          <div className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+            isDarkMode ? 'bg-gray-800' : 'bg-gray-700'
+          }`}>
             <LayoutDashboard size={20} />
-            <span>My Attendance</span>
-          </button>
+            {sidebarOpen && <span className="font-semibold">{t.title}</span>}
+          </div>
         </nav>
 
-        {/* Sidebar Footer */}
-        <div className="p-6 mt-auto border-t border-gray-800">
-           <div className="flex items-center gap-3 mb-6">
-            <button className="flex items-center gap-1 bg-gray-800 hover:bg-gray-700 text-white px-3 py-1.5 rounded-md text-xs transition">
-              <Globe size={14} />
-              <span>EN</span>
-            </button>
-            <button className="p-1.5 bg-gray-800 hover:bg-gray-700 text-white rounded-full transition">
-              <Moon size={14} />
-            </button>
-          </div>
-
-          <div className="mb-6">
-            <p className="text-sm text-gray-400">Welcome,</p>
-            <h4 className="font-bold text-lg text-white">Student 2024001</h4>
-            <p className="text-xs text-gray-500">Undergraduate Student</p>
-          </div>
-
-          <button className="w-full flex items-center justify-center gap-2 border border-gray-700 hover:bg-gray-800 text-gray-300 px-4 py-2.5 rounded-lg text-sm transition">
-            <LogOut size={16} />
-            <span>Log Out</span>
+        {/* Bottom Section */}
+        <div className="space-y-2 border-t border-gray-500 pt-3 mt-auto">
+          {sidebarOpen && (
+            <div className="text-xs opacity-75 px-4 mb-2">
+              <p>{t.welcome}</p>
+              <p className="font-semibold">Student 2024001</p>
+              <p className="text-xs opacity-60">{t.studentAccount}</p>
+            </div>
+          )}
+          <button className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg transition ${
+            isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+          }`}>
+            <LogOut size={18} />
+            {sidebarOpen && <span>{t.logOut}</span>}
           </button>
         </div>
       </aside>
 
-
-      {/* --- MAIN CONTENT (Koyu Tema) --- */}
-      <main className="flex-1 flex flex-col min-h-screen w-full">
-        
-        {/* MOBILE HEADER (Koyu) */}
-        <div className={`lg:hidden ${darkCardBg} border-b border-gray-800 p-4 flex items-center justify-between shadow-sm sticky top-0 z-30`}>
-          <div className="flex items-center gap-2">
-             <span className={`text-xl font-bold ${accentColor}`}>M</span>
-             <span className="font-bold text-white">Maltepe Uni</span>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Top Bar */}
+        <div className={`${
+          isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+        } border-b px-6 py-4 flex items-center justify-between`}>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className={`p-2 rounded-lg transition ${
+                isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
+              }`}
+            >
+              <Menu size={24} className={isDarkMode ? 'text-white' : 'text-gray-800'} />
+            </button>
+            <h1 className={`text-2xl font-bold ${
+              isDarkMode ? 'text-white' : 'text-gray-800'
+            }`}>{t.title}</h1>
           </div>
-          <button 
-            onClick={() => setIsSidebarOpen(true)}
-            className="p-2 text-gray-300 hover:bg-gray-800 rounded-lg transition"
-          >
-            <Menu size={24} />
-          </button>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={toggleLanguage}
+              className={`p-2 rounded-lg transition flex items-center gap-1 ${
+                isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'
+              }`}
+              title="Change Language"
+            >
+              <Globe size={20} className={isDarkMode ? 'text-white' : 'text-gray-800'} />
+              <span className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>{language}</span>
+            </button>
+            <button 
+              onClick={toggleDarkMode}
+              className={`p-2 rounded-lg transition ${
+                isDarkMode ? 'bg-gray-700 hover:bg-gray-600 text-yellow-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
+              }`}
+              title={isDarkMode ? 'Light Mode' : 'Dark Mode'}
+            >
+              {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+          </div>
         </div>
 
         {/* Content Area */}
-        <div className="p-6 lg:p-12 flex-1 overflow-y-auto">
+        <div className="flex-1 p-6 overflow-auto">
+          <div className="max-w-7xl mx-auto">
           
-          <div className="mb-8">
-            <h2 className="text-2xl lg:text-3xl font-bold text-white mb-2">My Attendance Dashboard</h2>
-            <p className="text-sm lg:text-base text-gray-400">View your personal attendance records (FR-11)</p>
-          </div>
+            <div className="mb-6">
+              <h2 className={`text-2xl font-bold ${textPrimary} mb-1`}>{t.title}</h2>
+              <p className={`text-sm ${textSecondary}`}>{t.subtitle}</p>
+            </div>
 
-          {/* Cards Grid (Koyu Kartlar) */}
+          {/* Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6 mb-10">
             {summaryCards.map((card, index) => (
-              <div key={index} className={`${darkCardBg} p-5 lg:p-6 rounded-2xl shadow-lg border border-gray-800/50 flex items-center gap-5 transition-transform hover:scale-[1.01]`}>
+              <div key={index} className={`${darkCardBg} p-5 lg:p-6 rounded-2xl shadow-lg border ${borderColor} flex items-center gap-5 transition-transform hover:scale-[1.01]`}>
                 <div className={`p-3 lg:p-4 rounded-xl ${card.color}`}>
                   <card.icon size={24} className="lg:w-7 lg:h-7" />
                 </div>
                 <div>
-                  <h3 className="text-xs lg:text-sm font-medium text-gray-400 mb-1">{card.title}</h3>
-                  <p className="text-2xl lg:text-3xl font-bold text-white">{card.value}</p>
+                  <h3 className={`text-xs lg:text-sm font-medium ${textSecondary} mb-1`}>{t[card.titleKey as keyof typeof t]}</h3>
+                  <p className={`text-2xl lg:text-3xl font-bold ${textPrimary}`}>{card.value}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Course List (Koyu Liste) */}
+          {/* Course List */}
           <div>
             <div className="flex items-center gap-2 mb-6">
               <BookOpen size={20} className={accentColor}/>
-              <h3 className="text-lg lg:text-xl font-bold text-white">Course Attendance Status</h3>
+              <h3 className={`text-lg lg:text-xl font-bold ${textPrimary}`}>{t.courseAttendance}</h3>
             </div>
 
-            <div className={`${darkCardBg} rounded-2xl shadow-lg border border-gray-800/50 overflow-hidden`}>
+            <div className={`${darkCardBg} rounded-2xl shadow-lg border ${borderColor} overflow-hidden`}>
               {courseAttendanceData.map((course, index) => (
-                <div key={index} className={`p-5 lg:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 ${index !== courseAttendanceData.length - 1 ? 'border-b border-gray-800' : ''}`}>
+                <div key={index} className={`p-5 lg:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 ${index !== courseAttendanceData.length - 1 ? `border-b ${borderColor}` : ''}`}>
                   
                   <div className="flex-1">
-                    <h4 className="font-bold text-white text-base lg:text-lg mb-1">
+                    <h4 className={`font-bold ${textPrimary} text-base lg:text-lg mb-1`}>
                       <span className={accentColor}>{course.code}</span> - {course.name}
                     </h4>
-                    <p className="text-sm text-gray-400 font-medium">
-                      {course.attended} / {course.total} sessions
+                    <p className={`text-sm ${textSecondary} font-medium`}>
+                      {course.attended} / {course.total} {t.sessions}
                     </p>
                   </div>
 
                   <div className="flex items-center gap-4 w-full md:w-1/2 xl:w-1/3">
-                    {/* Progress Bar Arka Planı Koyu Yapıldı */}
-                    <div className="w-full h-2.5 lg:h-3 bg-gray-700 rounded-full overflow-hidden">
+                    <div className={`w-full h-2.5 lg:h-3 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-300'} rounded-full overflow-hidden`}>
                       <div 
                         className={`h-full rounded-full transition-all duration-500 ${course.percentage >= 70 ? 'bg-green-500' : 'bg-red-500'}`}
                         style={{ width: `${course.percentage}%` }}
@@ -194,9 +264,9 @@ export default function StudentReportsPage() {
               ))}
             </div>
           </div>
+          </div>
         </div>
-
-      </main>
+      </div>
     </div>
   );
 }
