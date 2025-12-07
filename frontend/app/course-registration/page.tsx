@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { 
+import {
   BookOpen,
-  Globe, 
-  Moon, 
+  Globe,
+  Moon,
   Sun,
-  LogOut, 
-  Menu, 
+  LogOut,
+  Menu,
   Upload,
   CheckCircle2,
   XCircle,
@@ -92,16 +92,25 @@ export default function CourseRegistrationPage() {
   const [language, setLanguage] = useState<'TR' | 'EN'>('EN');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [mounted, setMounted] = useState(false);
+
+  // Data for dropdowns
+  const [instructors, setInstructors] = useState<any[]>([]);
+  const [classrooms, setClassrooms] = useState<any[]>([]);
+
   const [formData, setFormData] = useState({
     courseCode: '',
     courseName: '',
     courseDescription: '',
     semester: '',
-    academicYear: ''
+    academicYear: '',
+    credits: '',
+    instructor_id: '',
+    classroom_id: ''
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const t = translations[language];
 
@@ -118,7 +127,35 @@ export default function CourseRegistrationPage() {
       const lang = savedLang.toUpperCase() === 'TR' ? 'TR' : 'EN';
       setLanguage(lang);
     }
+
+    // Fetch Instructors and Classrooms
+    fetchInstructors();
+    fetchClassrooms();
   }, []);
+
+  const fetchInstructors = async () => {
+    try {
+      const res = await fetch('http://localhost:5001/api/instructors');
+      if (res.ok) {
+        const data = await res.json();
+        setInstructors(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch instructors", error);
+    }
+  };
+
+  const fetchClassrooms = async () => {
+    try {
+      const res = await fetch('http://localhost:5001/api/classrooms');
+      if (res.ok) {
+        const data = await res.json();
+        setClassrooms(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch classrooms", error);
+    }
+  };
 
   const toggleDarkMode = () => {
     const newMode = !isDarkMode;
@@ -163,6 +200,10 @@ export default function CourseRegistrationPage() {
       newErrors.courseName = `${t.courseName} ${t.required.toLowerCase()}`;
     }
 
+    if (!formData.credits) {
+      newErrors.credits = "Credits required";
+    }
+
     if (!formData.semester) {
       newErrors.semester = `${t.semester} ${t.required.toLowerCase()}`;
     }
@@ -177,7 +218,8 @@ export default function CourseRegistrationPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    setApiError(null);
+
     if (!validateForm()) {
       return;
     }
@@ -185,22 +227,52 @@ export default function CourseRegistrationPage() {
     setIsSubmitting(true);
     setSubmitSuccess(false);
 
-    setTimeout(() => {
+    try {
+      const response = await fetch('http://localhost:5001/api/courses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          course_code: formData.courseCode,
+          course_name: formData.courseName,
+          credits: parseInt(formData.credits),
+          classroom_id: formData.classroom_id || null, // Optional
+          instructor_id: formData.instructor_id || null, // Optional
+          // semester/academicYear not in Course model according to routes.py, 
+          // but might be useful. The backend implementation only takes code, name, credits.
+          // Wait, the Enrollment model has year/term. The Course model doesn't seem to store semester/year directly based on previous files.
+          // But I'll send what is supported.
+        }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Failed to register course');
+      }
+
       console.log('Course registered:', formData);
-      setIsSubmitting(false);
       setSubmitSuccess(true);
-      
+
       setTimeout(() => {
         setFormData({
           courseCode: '',
           courseName: '',
           courseDescription: '',
           semester: '',
-          academicYear: ''
+          academicYear: '',
+          credits: '',
+          instructor_id: '',
+          classroom_id: ''
         });
         setSubmitSuccess(false);
       }, 2000);
-    }, 1500);
+
+    } catch (err: any) {
+      setApiError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const navigateToPage = (page: string) => {
@@ -225,26 +297,24 @@ export default function CourseRegistrationPage() {
   }
 
   return (
-    <div className={`min-h-screen flex transition-colors duration-300 ${
-      isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
-    }`}>
+    <div className={`min-h-screen flex transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
+      }`}>
       {/* Mobile Overlay */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
-      
+
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} hidden lg:flex fixed lg:static h-full lg:h-auto transition-all duration-300 ${
-        isDarkMode ? 'bg-gray-700' : 'bg-gray-600'
-      } text-white flex-col p-4 z-50 max-h-screen lg:max-h-none overflow-y-auto lg:overflow-y-visible`}>
+      <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} hidden lg:flex fixed lg:static h-full lg:h-auto transition-all duration-300 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-600'
+        } text-white flex-col p-4 z-50 max-h-screen lg:max-h-none overflow-y-auto lg:overflow-y-visible`}>
         {/* Logo and Title */}
         <div className="flex items-center gap-3 mb-8 min-w-0">
-          <Image 
-            src="/maltepe-uni-logo.svg" 
-            alt="Maltepe University Logo" 
+          <Image
+            src="/maltepe-uni-logo.svg"
+            alt="Maltepe University Logo"
             width={40}
             height={40}
             priority
@@ -260,64 +330,55 @@ export default function CourseRegistrationPage() {
         <div className="flex-1 space-y-2">
           <button
             onClick={() => navigateToPage('teacher-live-attendance')}
-            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
-              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
-            }`}
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+              }`}
           >
             <Video size={20} className="flex-shrink-0" />
-            <span className={`transition-opacity duration-300 leading-none font-bold ${
-              sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'
-            }`}>
+            <span className={`transition-opacity duration-300 leading-none font-bold ${sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'
+              }`}>
               {t.liveAttendance}
             </span>
           </button>
 
           <button
             onClick={() => navigateToPage('student-registration')}
-            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
-              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
-            }`}
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+              }`}
           >
             <UserPlus size={20} className="flex-shrink-0" />
-            <span className={`transition-opacity duration-300 leading-none font-bold ${
-              sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'
-            }`}>
+            <span className={`transition-opacity duration-300 leading-none font-bold ${sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'
+              }`}>
               {t.studentRegistration}
             </span>
           </button>
 
           <button
-            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 h-10 ${
-              isDarkMode ? 'bg-gray-800' : 'bg-gray-700'
-            }`}
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 h-10 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-700'
+              }`}
           >
             <BookOpen size={20} className="flex-shrink-0" />
-            <span className={`transition-opacity duration-300 leading-none font-bold ${
-              sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'
-            }`}>
+            <span className={`transition-opacity duration-300 leading-none font-bold ${sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'
+              }`}>
               {t.courseRegistration}
             </span>
           </button>
 
           <button
             onClick={() => navigateToPage('course-enrollment')}
-            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
-              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
-            }`}
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+              }`}
           >
             <Users size={20} className="flex-shrink-0" />
-            <span className={`transition-opacity duration-300 leading-none font-bold ${
-              sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'
-            }`}>
+            <span className={`transition-opacity duration-300 leading-none font-bold ${sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'
+              }`}>
               {t.courseEnrollment}
             </span>
           </button>
 
           <button
             onClick={() => navigateToPage('teacher-reports')}
-            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
-              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
-            }`}
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+              }`}
           >
             <BarChart3 size={20} className="flex-shrink-0" />
             <span className={`transition-opacity duration-300 leading-none font-bold ${sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'}`}>{t.attendanceReports}</span>
@@ -331,27 +392,25 @@ export default function CourseRegistrationPage() {
             <p className="font-semibold">Dr. Emre Olca</p>
             <p className="text-xs opacity-60">{t.instructor}</p>
           </div>
-          <button 
+          <button
             onClick={handleLogout}
-            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 h-10 ${
-              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
-            }`}
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 h-10 ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+              }`}
           >
             <LogOut size={18} className="flex-shrink-0" />
             <span className={`transition-opacity duration-300 leading-none ${sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'}`}>{t.logOut}</span>
           </button>
         </div>
       </aside>
-      
+
       {/* Mobile Sidebar */}
-      <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:hidden fixed h-full w-48 transition-transform duration-300 ${
-        isDarkMode ? 'bg-gray-700' : 'bg-gray-600'
-      } text-white flex flex-col p-4 z-50`}>
+      <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:hidden fixed h-full w-48 transition-transform duration-300 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-600'
+        } text-white flex flex-col p-4 z-50`}>
         {/* Logo and Title */}
         <div className="flex items-center gap-3 mb-8">
-          <Image 
-            src="/maltepe-uni-logo.svg" 
-            alt="Maltepe University Logo" 
+          <Image
+            src="/maltepe-uni-logo.svg"
+            alt="Maltepe University Logo"
             width={40}
             height={40}
             priority
@@ -366,42 +425,37 @@ export default function CourseRegistrationPage() {
         <nav className="flex-1 space-y-2">
           <button
             onClick={() => navigateToPage('teacher-live-attendance')}
-            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
-              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
-            }`}
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+              }`}
           >
             <Video size={20} className="flex-shrink-0" />
             <span className={`transition-opacity duration-300 leading-none opacity-100 w-full font-bold truncate`}>{t.liveAttendance}</span>
           </button>
           <button
             onClick={() => navigateToPage('student-registration')}
-            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
-              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
-            }`}
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+              }`}
           >
             <UserPlus size={20} className="flex-shrink-0" />
             <span className={`transition-opacity duration-300 leading-none opacity-100 w-full font-bold truncate`}>{t.studentRegistration}</span>
           </button>
-          <div className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 h-10 ${
-            isDarkMode ? 'bg-gray-800' : 'bg-gray-700'
-          }`}>
+          <div className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 h-10 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-700'
+            }`}>
             <BookOpen size={20} className="flex-shrink-0" />
             <span className={`transition-opacity duration-300 leading-none opacity-100 w-full font-bold truncate`}>{t.courseRegistration}</span>
           </div>
           <button
             onClick={() => navigateToPage('course-enrollment')}
-            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
-              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
-            }`}
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+              }`}
           >
             <Users size={20} className="flex-shrink-0" />
             <span className={`transition-opacity duration-300 leading-none opacity-100 w-full font-bold truncate`}>{t.courseEnrollment}</span>
           </button>
           <button
             onClick={() => navigateToPage('teacher-reports')}
-            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
-              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
-            }`}
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+              }`}
           >
             <BarChart3 size={20} className="flex-shrink-0" />
             <span className={`transition-opacity duration-300 leading-none opacity-100 w-full font-bold truncate`}>{t.attendanceReports}</span>
@@ -415,11 +469,10 @@ export default function CourseRegistrationPage() {
             <p className="font-semibold">Dr. Emre Olca</p>
             <p className="text-xs opacity-60">{t.instructor}</p>
           </div>
-          <button 
+          <button
             onClick={handleLogout}
-            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 h-10 ${
-              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
-            }`}
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 h-10 ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+              }`}
           >
             <LogOut size={18} className="flex-shrink-0" />
             <span className={`transition-opacity duration-300 leading-none opacity-100 w-full`}>{t.logOut}</span>
@@ -430,38 +483,33 @@ export default function CourseRegistrationPage() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Top Bar */}
-        <div className={`${
-          isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-        } border-b px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between`}>
+        <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+          } border-b px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between`}>
           <div className="flex items-center gap-2 sm:gap-4">
-            <button 
+            <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className={`p-2 rounded-lg transition ${
-                isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
-              }`}
+              className={`p-2 rounded-lg transition ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
+                }`}
             >
               <Menu size={20} className={`sm:w-6 sm:h-6 ${isDarkMode ? 'text-white' : 'text-gray-800'}`} />
             </button>
-            <h1 className={`text-lg sm:text-xl lg:text-2xl font-bold ${
-              isDarkMode ? 'text-white' : 'text-gray-800'
-            }`}>{t.title}</h1>
+            <h1 className={`text-lg sm:text-xl lg:text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'
+              }`}>{t.title}</h1>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
-            <button 
+            <button
               onClick={toggleLanguage}
-              className={`p-1.5 sm:p-2 rounded-lg transition flex items-center gap-1 ${
-                isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'
-              }`}
+              className={`p-1.5 sm:p-2 rounded-lg transition flex items-center gap-1 ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'
+                }`}
               title="Change Language"
             >
               <Globe size={16} className={`sm:w-5 sm:h-5 ${isDarkMode ? 'text-white' : 'text-gray-800'}`} />
               <span className={`text-xs sm:text-sm font-medium hidden sm:inline ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>{language}</span>
             </button>
-            <button 
+            <button
               onClick={toggleDarkMode}
-              className={`p-1.5 sm:p-2 rounded-lg transition ${
-                isDarkMode ? 'bg-gray-700 hover:bg-gray-600 text-yellow-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
-              }`}
+              className={`p-1.5 sm:p-2 rounded-lg transition ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600 text-yellow-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
+                }`}
               title={isDarkMode ? 'Light Mode' : 'Dark Mode'}
             >
               {isDarkMode ? <Sun size={16} className="sm:w-5 sm:h-5" /> : <Moon size={16} className="sm:w-5 sm:h-5" />}
@@ -471,13 +519,21 @@ export default function CourseRegistrationPage() {
 
         {/* Content Area */}
         <div className="flex-1 p-3 sm:p-6 overflow-auto">
-          
+
           <div className="max-w-7xl mx-auto">
             {/* Header */}
             <div className="mb-6">
               <h2 className={`text-2xl font-bold ${colors.textPrimary} mb-1`}>{t.title}</h2>
               <p className={`text-sm ${colors.textSecondary}`}>{t.subtitle}</p>
             </div>
+
+            {/* Error Message */}
+            {apiError && (
+              <div className={`mb-6 ${colors.bgCard} border ${isDarkMode ? 'border-red-500/50' : 'border-red-500'} rounded-lg p-4 flex items-center gap-3`}>
+                <XCircle className="text-red-400" size={20} />
+                <p className="text-red-400 font-medium">{apiError}</p>
+              </div>
+            )}
 
             {/* Success Message */}
             {submitSuccess && (
@@ -489,169 +545,235 @@ export default function CourseRegistrationPage() {
 
             {/* Registration Form */}
             <div className={`${colors.bgCard} border ${colors.border} rounded-lg shadow-lg p-6`}>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              
-              {/* Form Fields Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
-                {/* Course Code */}
-                <div>
-                  <label className={`block text-sm font-semibold mb-2 ${colors.textPrimary}`}>
-                    {t.courseCode} <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="courseCode"
-                    value={formData.courseCode}
-                    onChange={handleInputChange}
-                    className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${
-                      errors.courseCode
+              <form onSubmit={handleSubmit} className="space-y-6">
+
+                {/* Form Fields Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                  {/* Course Code */}
+                  <div>
+                    <label className={`block text-sm font-semibold mb-2 ${colors.textPrimary}`}>
+                      {t.courseCode} <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="courseCode"
+                      value={formData.courseCode}
+                      onChange={handleInputChange}
+                      className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${errors.courseCode
                         ? `${isDarkMode ? 'bg-gray-700' : 'bg-red-50'} border-2 border-red-500 ${colors.textPrimary}`
                         : `${colors.bgMain} border ${colors.border} ${colors.textPrimary} placeholder-gray-500 focus:ring-purple-500 focus:border-purple-500`
-                    }`}
-                    placeholder={t.courseCodePlaceholder}
-                    required
-                  />
-                  {errors.courseCode && (
-                    <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
-                      <XCircle size={12} />
-                      {errors.courseCode}
-                    </p>
-                  )}
-                </div>
+                        }`}
+                      placeholder={t.courseCodePlaceholder}
+                      required
+                    />
+                    {errors.courseCode && (
+                      <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                        <XCircle size={12} />
+                        {errors.courseCode}
+                      </p>
+                    )}
+                  </div>
 
-                {/* Course Name */}
-                <div>
-                  <label className={`block text-sm font-semibold mb-2 ${colors.textPrimary}`}>
-                    {t.courseName} <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="courseName"
-                    value={formData.courseName}
-                    onChange={handleInputChange}
-                    className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${
-                      errors.courseName
+                  {/* Course Name */}
+                  <div>
+                    <label className={`block text-sm font-semibold mb-2 ${colors.textPrimary}`}>
+                      {t.courseName} <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="courseName"
+                      value={formData.courseName}
+                      onChange={handleInputChange}
+                      className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${errors.courseName
                         ? `${isDarkMode ? 'bg-gray-700' : 'bg-red-50'} border-2 border-red-500 ${colors.textPrimary}`
                         : `${colors.bgMain} border ${colors.border} ${colors.textPrimary} placeholder-gray-500 focus:ring-purple-500 focus:border-purple-500`
-                    }`}
-                    placeholder={t.courseNamePlaceholder}
-                    required
+                        }`}
+                      placeholder={t.courseNamePlaceholder}
+                      required
+                    />
+                    {errors.courseName && (
+                      <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                        <XCircle size={12} />
+                        {errors.courseName}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Credits */}
+                  <div>
+                    <label className={`block text-sm font-semibold mb-2 ${colors.textPrimary}`}>
+                      Credits <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      name="credits"
+                      value={formData.credits}
+                      onChange={handleInputChange}
+                      className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${errors.credits
+                        ? `${isDarkMode ? 'bg-gray-700' : 'bg-red-50'} border-2 border-red-500 ${colors.textPrimary}`
+                        : `${colors.bgMain} border ${colors.border} ${colors.textPrimary} placeholder-gray-500 focus:ring-purple-500 focus:border-purple-500`
+                        }`}
+                      placeholder="3"
+                      required
+                    />
+                    {errors.credits && (
+                      <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                        <XCircle size={12} />
+                        {errors.credits}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Instructor */}
+                  <div>
+                    <label className={`block text-sm font-semibold mb-2 ${colors.textPrimary}`}>
+                      Instructor
+                    </label>
+                    <select
+                      name="instructor_id"
+                      value={formData.instructor_id}
+                      onChange={handleInputChange}
+                      className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${`${colors.bgMain} border ${colors.border} ${colors.textPrimary} focus:ring-purple-500 focus:border-purple-500`
+                        }`}
+                    >
+                      <option value="">Select Instructor</option>
+                      {instructors.map((inst) => (
+                        <option key={inst.id} value={inst.id}>
+                          {inst.name} ({inst.title})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Classroom */}
+                  <div>
+                    <label className={`block text-sm font-semibold mb-2 ${colors.textPrimary}`}>
+                      Classroom
+                    </label>
+                    <select
+                      name="classroom_id"
+                      value={formData.classroom_id}
+                      onChange={handleInputChange}
+                      className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${`${colors.bgMain} border ${colors.border} ${colors.textPrimary} focus:ring-purple-500 focus:border-purple-500`
+                        }`}
+                    >
+                      <option value="">Select Classroom</option>
+                      {classrooms.map((room) => (
+                        <option key={room.id} value={room.id}>
+                          {room.code} (Cap: {room.capacity})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Semester */}
+                  <div>
+                    <label className={`block text-sm font-semibold mb-2 ${colors.textPrimary}`}>
+                      {t.semester} <span className="text-red-400">*</span>
+                    </label>
+                    <select
+                      name="semester"
+                      value={formData.semester}
+                      onChange={handleInputChange}
+                      className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${errors.semester
+                        ? `${isDarkMode ? 'bg-gray-700' : 'bg-red-50'} border-2 border-red-500 ${colors.textPrimary}`
+                        : `${colors.bgMain} border ${colors.border} ${colors.textPrimary} focus:ring-purple-500 focus:border-purple-500`
+                        }`}
+                      required
+                    >
+                      <option value="">{t.selectSemester}</option>
+                      <option value="Fall">Fall</option>
+                      <option value="Spring">Spring</option>
+                      <option value="Summer">Summer</option>
+                    </select>
+                    {errors.semester && (
+                      <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                        <XCircle size={12} />
+                        {errors.semester}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Academic Year */}
+                  <div>
+                    <label className={`block text-sm font-semibold mb-2 ${colors.textPrimary}`}>
+                      {t.academicYear} <span className="text-red-400">*</span>
+                    </label>
+                    <select
+                      name="academicYear"
+                      value={formData.academicYear}
+                      onChange={handleInputChange}
+                      className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${errors.academicYear
+                        ? `${isDarkMode ? 'bg-gray-700' : 'bg-red-50'} border-2 border-red-500 ${colors.textPrimary}`
+                        : `${colors.bgMain} border ${colors.border} ${colors.textPrimary} focus:ring-purple-500 focus:border-purple-500`
+                        }`}
+                      required
+                    >
+                      <option value="">{t.selectAcademicYear}</option>
+                      {academicYears.map((year) => (
+                        <option key={year} value={year}>{year}</option>
+                      ))}
+                    </select>
+                    {errors.academicYear && (
+                      <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                        <XCircle size={12} />
+                        {errors.academicYear}
+                      </p>
+                    )}
+                  </div>
+
+                </div>
+
+                {/* Course Description */}
+                {/* (Assuming descriptions aren't actually stored in current backend model, but keeping UI) */}
+                <div>
+                  <label className={`block text-sm font-semibold mb-2 ${colors.textPrimary}`}>
+                    {t.courseDescription}
+                  </label>
+                  <textarea
+                    name="courseDescription"
+                    value={formData.courseDescription}
+                    onChange={handleInputChange}
+                    rows={4}
+                    className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${colors.bgMain} border ${colors.border} ${colors.textPrimary} placeholder-gray-500 focus:ring-purple-500 focus:border-purple-500`}
+                    placeholder={t.courseDescriptionPlaceholder}
                   />
-                  {errors.courseName && (
-                    <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
-                      <XCircle size={12} />
-                      {errors.courseName}
-                    </p>
-                  )}
                 </div>
 
-                {/* Semester */}
-                <div>
-                  <label className={`block text-sm font-semibold mb-2 ${colors.textPrimary}`}>
-                    {t.semester} <span className="text-red-400">*</span>
-                  </label>
-                  <select
-                    name="semester"
-                    value={formData.semester}
-                    onChange={handleInputChange}
-                    className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${
-                      errors.semester
-                        ? `${isDarkMode ? 'bg-gray-700' : 'bg-red-50'} border-2 border-red-500 ${colors.textPrimary}`
-                        : `${colors.bgMain} border ${colors.border} ${colors.textPrimary} focus:ring-purple-500 focus:border-purple-500`
-                    }`}
-                    required
+                {/* Submit Button */}
+                <div className="flex gap-4 pt-4">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className={`flex-1 md:flex-none md:px-8 py-3 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${colors.accentPurple
+                      } hover:opacity-90`}
                   >
-                    <option value="">{t.selectSemester}</option>
-                    <option value="Fall">Fall</option>
-                    <option value="Spring">Spring</option>
-                    <option value="Summer">Summer</option>
-                  </select>
-                  {errors.semester && (
-                    <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
-                      <XCircle size={12} />
-                      {errors.semester}
-                    </p>
-                  )}
-                </div>
-
-                {/* Academic Year */}
-                <div>
-                  <label className={`block text-sm font-semibold mb-2 ${colors.textPrimary}`}>
-                    {t.academicYear} <span className="text-red-400">*</span>
-                  </label>
-                  <select
-                    name="academicYear"
-                    value={formData.academicYear}
-                    onChange={handleInputChange}
-                    className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${
-                      errors.academicYear
-                        ? `${isDarkMode ? 'bg-gray-700' : 'bg-red-50'} border-2 border-red-500 ${colors.textPrimary}`
-                        : `${colors.bgMain} border ${colors.border} ${colors.textPrimary} focus:ring-purple-500 focus:border-purple-500`
-                    }`}
-                    required
+                    {isSubmitting ? t.registering : t.registerCourse}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData({
+                        courseCode: '',
+                        courseName: '',
+                        courseDescription: '',
+                        semester: '',
+                        academicYear: '',
+                        credits: '',
+                        instructor_id: '',
+                        classroom_id: ''
+                      });
+                      setErrors({});
+                    }}
+                    className={`px-6 py-3 border ${colors.border} ${colors.textSecondary} font-semibold rounded-lg transition-all hover:${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'}`}
                   >
-                    <option value="">{t.selectAcademicYear}</option>
-                    {academicYears.map((year) => (
-                      <option key={year} value={year}>{year}</option>
-                    ))}
-                  </select>
-                  {errors.academicYear && (
-                    <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
-                      <XCircle size={12} />
-                      {errors.academicYear}
-                    </p>
-                  )}
+                    {t.clearForm}
+                  </button>
                 </div>
 
-              </div>
-
-              {/* Course Description */}
-              <div>
-                <label className={`block text-sm font-semibold mb-2 ${colors.textPrimary}`}>
-                  {t.courseDescription}
-                </label>
-                <textarea
-                  name="courseDescription"
-                  value={formData.courseDescription}
-                  onChange={handleInputChange}
-                  rows={4}
-                  className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${colors.bgMain} border ${colors.border} ${colors.textPrimary} placeholder-gray-500 focus:ring-purple-500 focus:border-purple-500`}
-                  placeholder={t.courseDescriptionPlaceholder}
-                />
-              </div>
-
-              {/* Submit Button */}
-              <div className="flex gap-4 pt-4">
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className={`flex-1 md:flex-none md:px-8 py-3 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${
-                    colors.accentPurple
-                  } hover:opacity-90`}
-                >
-                  {isSubmitting ? t.registering : t.registerCourse}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFormData({
-                      courseCode: '',
-                      courseName: '',
-                      courseDescription: '',
-                      semester: '',
-                      academicYear: ''
-                    });
-                    setErrors({});
-                  }}
-                  className={`px-6 py-3 border ${colors.border} ${colors.textSecondary} font-semibold rounded-lg transition-all hover:${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'}`}
-                >
-                  {t.clearForm}
-                </button>
-              </div>
-
-            </form>
-          </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>
