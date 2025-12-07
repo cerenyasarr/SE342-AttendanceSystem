@@ -30,8 +30,8 @@ This project is a **web-based system** that allows a teacher to take attendance 
 ## 🖼️ Screenshots
 
 | Log in Page | Live Attendance | Student Registration | Teachers Reports | Student Reports |
-| :---: | :---: | :---: | :---: | :---: |
-| <img width="200" alt="Log in page" src="https://github.com/user-attachments/assets/689250a1-8fd1-440f-aa63-d8510e086f5a" /> | <img width="200" alt="Live attendance" src="https://github.com/user-attachments/assets/f1328385-f19f-47a5-bf57-5425cd4e55a4" /> | <img width="200" alt="Student registration" src="https://github.com/user-attachments/assets/b6390f37-4cd6-40d7-970c-267e7a0f307b" /> | <img width="200" alt="Teachers reports" src="https://github.com/user-attachments/assets/daed1710-64f8-4ada-8bd0-4adeea41d736" /> | <img width="200" alt="Student reports" src="https://github.com/user-attachments/assets/14cfadf6-b5a9-4d0b-a831-c3ecc19d5445" /> |
+ :---: | :---: | :---: | :---: | :---: |
+| <img width="351" height="759" alt="Screenshot 2025-12-07 at 22 37 00" src="https://github.com/user-attachments/assets/e58191da-895c-4481-967d-21fbfcacc809" />| <img width="200" alt="Live attendance" src="https://github.com/user-attachments/assets/f1328385-f19f-47a5-bf57-5425cd4e55a4" /> | <img width="200" alt="Student registration" src="https://github.com/user-attachments/assets/b6390f37-4cd6-40d7-970c-267e7a0f307b" /> | <img width="200" alt="Teachers reports" src="https://github.com/user-attachments/assets/daed1710-64f8-4ada-8bd0-4adeea41d736" /> | <img width="200" alt="Student reports" src="https://github.com/user-attachments/assets/14cfadf6-b5a9-4d0b-a831-c3ecc19d5445" /> |
 
 ---
 
