@@ -159,8 +159,21 @@ export default function StudentRegistrationPage() {
     }
   };
 
+ // Mevcut useEffect yerine bunu kullanın:
   useEffect(() => {
     setMounted(true);
+
+    // 1. Önce localStorage'da kayıtlı bir tercih var mı bak
+    const savedMode = localStorage.getItem('darkMode');
+    
+    if (savedMode !== null) {
+      // Kayıt varsa onu uygula
+      setIsDarkMode(JSON.parse(savedMode));
+    } else {
+      // 2. Kayıt yoksa, kullanıcının bilgisayarının sistem temasını kontrol et
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setIsDarkMode(systemPrefersDark);
+    }
   }, []);
 
   useEffect(() => {
