@@ -17,12 +17,11 @@ This project is a **web-based system** that allows a teacher to take attendance 
   
 ---
 
-
 ## 🛠️ Planned Tech Stack
 
-* **Frontend:** Web interface for teachers to manage students, view the live camera feed, and check reports.
-* **Backend:** API server responsible for saving student data, running the face recognition algorithm, and serving reporting data.
-* **Database:** Stores student information (including photos) and attendance records.
+* **Frontend (Next.js):** Web interface for teachers to manage students, view the live camera feed, and check reports.
+* **Backend (Python Flask):** API server responsible for saving student data, running the face recognition algorithm, and serving reporting data.
+* **Database (PostgreSQL):** Stores student information (including photos) and attendance records.
 * **Artificial Intelligence (AI):** Face recognition and matching module using the stored student photos.
 
 
