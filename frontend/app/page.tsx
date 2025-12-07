@@ -11,6 +11,8 @@ const pages: { [key: string]: any } = {
   'student-reports': dynamic(() => import('./student-reports/page')),
   'student-registration': dynamic(() => import('./student-registration/page')),
   'teacher-reports': dynamic(() => import('./teacher-reports/page')),
+  'course-registration': dynamic(() => import('./course-registration/page')),
+  'course-enrollment': dynamic(() => import('./course-enrollment/page')),
 };
 
 function PageContent() {
@@ -24,7 +26,7 @@ function PageContent() {
         <div className="text-center">
           <h1 className="text-3xl font-bold text-red-600 mb-4">Hata: Sayfa bulunamadı</h1>
           <p className="text-lg text-red-500 mb-4">Sayfa "{page}" geçersiz</p>
-          <p className="text-gray-600">Geçerli seçenekler: log-in, teacher-live-attendance, student-reports, student-registration, teacher-reports</p>
+          <p className="text-gray-600">Geçerli seçenekler: log-in, teacher-live-attendance, student-reports, student-registration, teacher-reports, course-registration, course-enrollment</p>
         </div>
       </div>
     );
