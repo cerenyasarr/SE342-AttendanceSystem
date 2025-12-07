@@ -19,7 +19,9 @@ import {
   UserPlus,
   Video,
   ArrowRight,
-  BarChart3
+  BarChart3,
+  BookOpen, // Yeni eklenen ikon
+  Users     // Yeni eklenen ikon
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -63,6 +65,8 @@ const translations = {
     editRecord: "Kaydı düzenle",
     quickAccess: "Hızlı Erişim",
     studentRegistration: "Öğrenci Kayıt",
+    courseRegistration: "Kurs Kayıt",      // Yeni Çeviri
+    courseEnrollment: "Kursa Öğrenci Ekle", // Yeni Çeviri
     attendanceReports: "Yoklama Raporları",
     liveAttendance: "Canlı Yoklama",
     universityName: "Maltepe Üniversitesi",
@@ -106,6 +110,8 @@ const translations = {
     editRecord: "Edit record",
     quickAccess: "Quick Access",
     studentRegistration: "Student Registration",
+    courseRegistration: "Course Registration", // Yeni Çeviri
+    courseEnrollment: "Enroll Students",       // Yeni Çeviri
     attendanceReports: "Attendance Reports",
     liveAttendance: "Live Attendance",
     universityName: "Maltepe University",
@@ -269,6 +275,7 @@ export default function TeacherReportsPage() {
 
         {/* Navigation Items */}
         <div className="flex-1 space-y-2">
+          {/* Live Attendance */}
           <button
             onClick={() => navigateToPage('teacher-live-attendance')}
             className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
@@ -283,6 +290,7 @@ export default function TeacherReportsPage() {
             </span>
           </button>
 
+          {/* Student Registration */}
           <button
             onClick={() => navigateToPage('student-registration')}
             className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
@@ -292,6 +300,38 @@ export default function TeacherReportsPage() {
             <UserPlus size={20} className="flex-shrink-0" />
             <span className={`transition-opacity duration-300 leading-none font-bold ${sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'}`}>{t.studentRegistration}</span>
           </button>
+
+          {/* NEW: Course Registration */}
+          <button
+            onClick={() => navigateToPage('course-registration')}
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
+              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+            }`}
+          >
+            <BookOpen size={20} className="flex-shrink-0" />
+            <span className={`transition-opacity duration-300 leading-none font-bold ${
+              sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'
+            }`}>
+              {t.courseRegistration}
+            </span>
+          </button>
+
+          {/* NEW: Course Enrollment */}
+          <button
+            onClick={() => navigateToPage('course-enrollment')}
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
+              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+            }`}
+          >
+            <Users size={20} className="flex-shrink-0" />
+            <span className={`transition-opacity duration-300 leading-none font-bold ${
+              sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'
+            }`}>
+              {t.courseEnrollment}
+            </span>
+          </button>
+
+          {/* Attendance Reports (ACTIVE) */}
           <button
             className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 h-10 ${
               isDarkMode ? 'bg-gray-800' : 'bg-gray-700'
@@ -346,6 +386,7 @@ export default function TeacherReportsPage() {
 
         {/* Navigation Items */}
         <nav className="flex-1 space-y-2">
+          {/* Live Attendance */}
           <button
             onClick={() => navigateToPage('teacher-live-attendance')}
             className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
@@ -355,6 +396,8 @@ export default function TeacherReportsPage() {
             <Video size={20} className="flex-shrink-0" />
             <span className={`transition-opacity duration-300 leading-none opacity-100 w-full font-bold truncate`}>{t.liveAttendance}</span>
           </button>
+
+          {/* Student Registration */}
           <button
             onClick={() => navigateToPage('student-registration')}
             className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
@@ -364,6 +407,30 @@ export default function TeacherReportsPage() {
             <UserPlus size={20} className="flex-shrink-0" />
             <span className={`transition-opacity duration-300 leading-none opacity-100 w-full font-bold truncate`}>{t.studentRegistration}</span>
           </button>
+
+          {/* NEW: Course Registration */}
+          <button
+            onClick={() => navigateToPage('course-registration')}
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
+              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+            }`}
+          >
+            <BookOpen size={20} className="flex-shrink-0" />
+            <span className={`transition-opacity duration-300 leading-none opacity-100 w-full font-bold truncate`}>{t.courseRegistration}</span>
+          </button>
+
+          {/* NEW: Course Enrollment */}
+          <button
+            onClick={() => navigateToPage('course-enrollment')}
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
+              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+            }`}
+          >
+            <Users size={20} className="flex-shrink-0" />
+            <span className={`transition-opacity duration-300 leading-none opacity-100 w-full font-bold truncate`}>{t.courseEnrollment}</span>
+          </button>
+
+          {/* Attendance Reports (ACTIVE) */}
           <div className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 h-10 ${
             isDarkMode ? 'bg-gray-800' : 'bg-gray-700'
           }`}>

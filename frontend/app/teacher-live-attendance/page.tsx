@@ -1,7 +1,25 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Menu, LogOut, Sun, Moon, Video, Mic, Settings, Globe, Check, X, Clock, Users, BarChart3, AlertCircle, UserPlus, FileText } from 'lucide-react';
+import { 
+  Menu, 
+  LogOut, 
+  Sun, 
+  Moon, 
+  Video, 
+  Mic, 
+  Settings, 
+  Globe, 
+  Check, 
+  X, 
+  Clock, 
+  Users, 
+  BarChart3, 
+  AlertCircle, 
+  UserPlus, 
+  FileText,
+  BookOpen // Yeni eklenen ikon
+} from 'lucide-react';
 import Image from 'next/image';
 
 export default function TeacherLiveAttendance() {
@@ -36,6 +54,8 @@ export default function TeacherLiveAttendance() {
       startAttendance: 'Yoklamayı Başlat',
       stopAttendance: 'Yoklamayı Durdur',
       studentRegistration: 'Öğrenci Kayıt',
+      courseRegistration: 'Kurs Kayıt',       // Yeni Çeviri
+      courseEnrollment: 'Kursa Öğrenci Ekle',  // Yeni Çeviri
       attendanceReports: 'Yoklama Raporları',
       logout: 'Çıkış Yap',
       welcome: 'Hoş geldiniz,',
@@ -78,6 +98,8 @@ export default function TeacherLiveAttendance() {
       startAttendance: 'Start Attendance',
       stopAttendance: 'Stop Attendance',
       studentRegistration: 'Student Registration',
+      courseRegistration: 'Course Registration', // Yeni Çeviri
+      courseEnrollment: 'Enroll Students',       // Yeni Çeviri
       attendanceReports: 'Attendance Reports',
       logout: 'Log Out',
       welcome: 'Welcome,',
@@ -191,18 +213,21 @@ export default function TeacherLiveAttendance() {
 
         {/* Navigation Items */}
         <div className="flex-1 space-y-2">
+          {/* Live Attendance (Active) */}
           <button
-          className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 h-10 ${
-            isDarkMode ? 'bg-gray-800' : 'bg-gray-700'
-          }`}>
-  <Video size={20} className="flex-shrink-0" />
-  <span className={`transition-opacity duration-300 leading-none font-bold ${
-    sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'
-  }`}>
-    {t.liveAttendance}
-          </span>
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 h-10 ${
+              isDarkMode ? 'bg-gray-800' : 'bg-gray-700'
+            }`}
+          >
+            <Video size={20} className="flex-shrink-0" />
+            <span className={`transition-opacity duration-300 leading-none font-bold ${
+              sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'
+            }`}>
+              {t.liveAttendance}
+            </span>
           </button>
 
+          {/* Student Registration */}
           <button
             onClick={() => navigateToPage('student-registration')}
             className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
@@ -212,6 +237,38 @@ export default function TeacherLiveAttendance() {
             <UserPlus size={20} className="flex-shrink-0" />
             <span className={`transition-opacity duration-300 leading-none font-bold ${sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'}`}>{t.studentRegistration}</span>
           </button>
+
+          {/* NEW: Course Registration */}
+          <button
+            onClick={() => navigateToPage('course-registration')}
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
+              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+            }`}
+          >
+            <BookOpen size={20} className="flex-shrink-0" />
+            <span className={`transition-opacity duration-300 leading-none font-bold ${
+              sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'
+            }`}>
+              {t.courseRegistration}
+            </span>
+          </button>
+
+          {/* NEW: Course Enrollment */}
+          <button
+            onClick={() => navigateToPage('course-enrollment')}
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
+              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+            }`}
+          >
+            <Users size={20} className="flex-shrink-0" />
+            <span className={`transition-opacity duration-300 leading-none font-bold ${
+              sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'
+            }`}>
+              {t.courseEnrollment}
+            </span>
+          </button>
+
+          {/* Attendance Reports */}
           <button
             onClick={() => navigateToPage('teacher-reports')}
             className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
@@ -263,12 +320,15 @@ export default function TeacherLiveAttendance() {
 
         {/* Navigation Items */}
         <nav className="flex-1 space-y-2">
+          {/* Live Attendance (Active) */}
           <div className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 h-10 ${
             isDarkMode ? 'bg-gray-800' : 'bg-gray-700'
           }`}>
             <Video size={20} className="flex-shrink-0" />
             <span className={`transition-opacity duration-300 leading-none opacity-100 w-full font-bold truncate`}>{t.liveAttendance}</span>
           </div>
+
+          {/* Student Registration */}
           <button
             onClick={() => navigateToPage('student-registration')}
             className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
@@ -278,6 +338,30 @@ export default function TeacherLiveAttendance() {
             <UserPlus size={20} className="flex-shrink-0" />
             <span className={`transition-opacity duration-300 leading-none opacity-100 w-full font-bold truncate`}>{t.studentRegistration}</span>
           </button>
+
+          {/* NEW: Course Registration */}
+          <button
+            onClick={() => navigateToPage('course-registration')}
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
+              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+            }`}
+          >
+            <BookOpen size={20} className="flex-shrink-0" />
+            <span className={`transition-opacity duration-300 leading-none opacity-100 w-full font-bold truncate`}>{t.courseRegistration}</span>
+          </button>
+
+          {/* NEW: Course Enrollment */}
+          <button
+            onClick={() => navigateToPage('course-enrollment')}
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
+              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+            }`}
+          >
+            <Users size={20} className="flex-shrink-0" />
+            <span className={`transition-opacity duration-300 leading-none opacity-100 w-full font-bold truncate`}>{t.courseEnrollment}</span>
+          </button>
+
+          {/* Attendance Reports */}
           <button
             onClick={() => navigateToPage('teacher-reports')}
             className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
