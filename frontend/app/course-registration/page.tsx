@@ -2,61 +2,48 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  UserPlus,
+  BookOpen,
   Globe, 
   Moon, 
   Sun,
   LogOut, 
   Menu, 
-  X,
   Upload,
-  Camera,
   CheckCircle2,
   XCircle,
-  FileText,
+  UserPlus,
   Video,
-  ArrowRight,
   BarChart3,
-  BookOpen,
-  Users
+  Users,
+  ArrowRight
 } from 'lucide-react';
 import Image from 'next/image';
 
 // Translations
 const translations = {
   TR: {
-    title: "Öğrenci Kayıt",
-    subtitle: "Yoklama sistemine yeni öğrenci kaydedin",
-    studentPhoto: "Öğrenci Fotoğrafı",
-    studentNumber: "Öğrenci Numarası",
-    name: "Ad",
-    surname: "Soyad",
-    department: "Bölüm",
-    class: "Sınıf",
-    email: "E-posta",
-    phone: "Telefon",
-    selectDepartment: "Bölüm seçin",
-    selectClass: "Sınıf seçin",
-    clickToUpload: "Fotoğraf yüklemek için tıklayın",
-    noPhoto: "Fotoğraf yok",
-    registerStudent: "Öğrenciyi Kaydet",
+    title: "Kurs Kayıt",
+    subtitle: "Yeni kurs oluşturun ve yönetin",
+    courseCode: "Kurs Kodu",
+    courseName: "Kurs Adı",
+    courseDescription: "Kurs Açıklaması",
+    semester: "Dönem",
+    academicYear: "Akademik Yıl",
+    selectSemester: "Dönem seçin",
+    selectAcademicYear: "Akademik yıl seçin",
+    registerCourse: "Kursu Kaydet",
     registering: "Kaydediliyor...",
     clearForm: "Formu Temizle",
-    success: "Öğrenci başarıyla kaydedildi!",
+    success: "Kurs başarıyla kaydedildi!",
     welcome: "Hoş geldiniz,",
     instructor: "Öğretmen",
     teacherAccount: "Öğretmen Hesabı",
     logOut: "Çıkış Yap",
     required: "Zorunlu",
-    studentNumberPlaceholder: "örn: 2024001",
-    namePlaceholder: "Ad",
-    surnamePlaceholder: "Soyad",
-    emailPlaceholder: "ogrenci@ornek.com",
-    phonePlaceholder: "+90 555 123 4567",
-    imageSizeError: "Resim boyutu 5MB'dan küçük olmalıdır",
-    imageTypeError: "Lütfen bir resim dosyası seçin",
-    studentNumberError: "Öğrenci numarası sadece rakam içermelidir",
-    emailError: "Lütfen geçerli bir e-posta adresi girin",
+    courseCodePlaceholder: "örn: SE342",
+    courseNamePlaceholder: "Yazılım Mühendisliği",
+    courseDescriptionPlaceholder: "Kurs açıklaması...",
+    courseCodeError: "Kurs kodu sadece harf ve rakam içermelidir",
     quickAccess: "Hızlı Erişim",
     studentRegistration: "Öğrenci Kayıt",
     courseRegistration: "Kurs Kayıt",
@@ -67,38 +54,28 @@ const translations = {
     systemName: "Otomatik Yoklama Sistemi",
   },
   EN: {
-    title: "Student Registration",
-    subtitle: "Register a new student to the attendance system",
-    studentPhoto: "Student Photo",
-    studentNumber: "Student Number",
-    name: "Name",
-    surname: "Surname",
-    department: "Department",
-    class: "Class",
-    email: "Email",
-    phone: "Phone",
-    selectDepartment: "Select department",
-    selectClass: "Select class",
-    clickToUpload: "Click to upload photo",
-    noPhoto: "No photo",
-    registerStudent: "Register Student",
+    title: "Course Registration",
+    subtitle: "Create and manage new courses",
+    courseCode: "Course Code",
+    courseName: "Course Name",
+    courseDescription: "Course Description",
+    semester: "Semester",
+    academicYear: "Academic Year",
+    selectSemester: "Select semester",
+    selectAcademicYear: "Select academic year",
+    registerCourse: "Register Course",
     registering: "Registering...",
     clearForm: "Clear Form",
-    success: "Student registered successfully!",
+    success: "Course registered successfully!",
     welcome: "Welcome,",
     instructor: "Instructor",
     teacherAccount: "Teacher Account",
     logOut: "Log Out",
     required: "Required",
-    studentNumberPlaceholder: "e.g., 2024001",
-    namePlaceholder: "First name",
-    surnamePlaceholder: "Last name",
-    emailPlaceholder: "student@example.com",
-    phonePlaceholder: "+90 555 123 4567",
-    imageSizeError: "Image size must be less than 5MB",
-    imageTypeError: "Please select an image file",
-    studentNumberError: "Student number must contain only digits",
-    emailError: "Please enter a valid email address",
+    courseCodePlaceholder: "e.g., SE342",
+    courseNamePlaceholder: "Software Engineering",
+    courseDescriptionPlaceholder: "Course description...",
+    courseCodeError: "Course code must contain only letters and numbers",
     quickAccess: "Quick Access",
     studentRegistration: "Student Registration",
     courseRegistration: "Course Registration",
@@ -110,22 +87,18 @@ const translations = {
   }
 };
 
-export default function StudentRegistrationPage() {
+export default function CourseRegistrationPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [language, setLanguage] = useState<'TR' | 'EN'>('EN');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [formData, setFormData] = useState({
-    studentNumber: '',
-    name: '',
-    surname: '',
-    department: '',
-    class: '',
-    email: '',
-    phone: ''
+    courseCode: '',
+    courseName: '',
+    courseDescription: '',
+    semester: '',
+    academicYear: ''
   });
-  const [photo, setPhoto] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -169,8 +142,7 @@ export default function StudentRegistrationPage() {
     accentPurple: 'bg-purple-600'
   };
 
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     if (errors[name]) {
@@ -178,59 +150,25 @@ export default function StudentRegistrationPage() {
     }
   };
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (!file.type.startsWith('image/')) {
-        setErrors(prev => ({ ...prev, photo: t.imageTypeError }));
-        return;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        setErrors(prev => ({ ...prev, photo: t.imageSizeError }));
-        return;
-      }
-      setPhoto(file);
-      setErrors(prev => ({ ...prev, photo: '' }));
-      
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
-    if (!formData.studentNumber.trim()) {
-      newErrors.studentNumber = `${t.studentNumber} ${t.required.toLowerCase()}`;
-    } else if (!/^\d+$/.test(formData.studentNumber)) {
-      newErrors.studentNumber = t.studentNumberError;
+    if (!formData.courseCode.trim()) {
+      newErrors.courseCode = `${t.courseCode} ${t.required.toLowerCase()}`;
+    } else if (!/^[A-Za-z0-9]+$/.test(formData.courseCode)) {
+      newErrors.courseCode = t.courseCodeError;
     }
 
-    if (!formData.name.trim()) {
-      newErrors.name = `${t.name} ${t.required.toLowerCase()}`;
+    if (!formData.courseName.trim()) {
+      newErrors.courseName = `${t.courseName} ${t.required.toLowerCase()}`;
     }
 
-    if (!formData.surname.trim()) {
-      newErrors.surname = `${t.surname} ${t.required.toLowerCase()}`;
+    if (!formData.semester) {
+      newErrors.semester = `${t.semester} ${t.required.toLowerCase()}`;
     }
 
-    if (!formData.department) {
-      newErrors.department = `${t.department} ${t.required.toLowerCase()}`;
-    }
-
-    if (!formData.class) {
-      newErrors.class = `${t.class} ${t.required.toLowerCase()}`;
-    }
-
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = t.emailError;
-    }
-
-    if (!photo) {
-      newErrors.photo = `${t.studentPhoto} ${t.required.toLowerCase()}`;
+    if (!formData.academicYear) {
+      newErrors.academicYear = `${t.academicYear} ${t.required.toLowerCase()}`;
     }
 
     setErrors(newErrors);
@@ -248,22 +186,18 @@ export default function StudentRegistrationPage() {
     setSubmitSuccess(false);
 
     setTimeout(() => {
-      console.log('Form submitted:', { ...formData, photo });
+      console.log('Course registered:', formData);
       setIsSubmitting(false);
       setSubmitSuccess(true);
       
       setTimeout(() => {
         setFormData({
-          studentNumber: '',
-          name: '',
-          surname: '',
-          department: '',
-          class: '',
-          email: '',
-          phone: ''
+          courseCode: '',
+          courseName: '',
+          courseDescription: '',
+          semester: '',
+          academicYear: ''
         });
-        setPhoto(null);
-        setPhotoPreview(null);
         setSubmitSuccess(false);
       }, 2000);
     }, 1500);
@@ -282,6 +216,13 @@ export default function StudentRegistrationPage() {
   };
 
   if (!mounted) return null;
+
+  // Generate academic years (current year - 2 to current year + 2)
+  const currentYear = new Date().getFullYear();
+  const academicYears = [];
+  for (let i = -2; i <= 2; i++) {
+    academicYears.push(`${currentYear + i}-${currentYear + i + 1}`);
+  }
 
   return (
     <div className={`min-h-screen flex transition-colors duration-300 ${
@@ -332,8 +273,9 @@ export default function StudentRegistrationPage() {
           </button>
 
           <button
-            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 h-10 ${
-              isDarkMode ? 'bg-gray-800' : 'bg-gray-700'
+            onClick={() => navigateToPage('student-registration')}
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
+              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
             }`}
           >
             <UserPlus size={20} className="flex-shrink-0" />
@@ -343,10 +285,10 @@ export default function StudentRegistrationPage() {
               {t.studentRegistration}
             </span>
           </button>
+
           <button
-            onClick={() => navigateToPage('course-registration')}
-            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
-              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 h-10 ${
+              isDarkMode ? 'bg-gray-800' : 'bg-gray-700'
             }`}
           >
             <BookOpen size={20} className="flex-shrink-0" />
@@ -356,6 +298,7 @@ export default function StudentRegistrationPage() {
               {t.courseRegistration}
             </span>
           </button>
+
           <button
             onClick={() => navigateToPage('course-enrollment')}
             className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
@@ -369,6 +312,7 @@ export default function StudentRegistrationPage() {
               {t.courseEnrollment}
             </span>
           </button>
+
           <button
             onClick={() => navigateToPage('teacher-reports')}
             className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
@@ -429,21 +373,21 @@ export default function StudentRegistrationPage() {
             <Video size={20} className="flex-shrink-0" />
             <span className={`transition-opacity duration-300 leading-none opacity-100 w-full font-bold truncate`}>{t.liveAttendance}</span>
           </button>
-          <div className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 h-10 ${
-            isDarkMode ? 'bg-gray-800' : 'bg-gray-700'
-          }`}>
-            <UserPlus size={20} className="flex-shrink-0" />
-            <span className={`transition-opacity duration-300 leading-none opacity-100 w-full font-bold truncate`}>{t.studentRegistration}</span>
-          </div>
           <button
-            onClick={() => navigateToPage('course-registration')}
+            onClick={() => navigateToPage('student-registration')}
             className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
               isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-700'
             }`}
           >
+            <UserPlus size={20} className="flex-shrink-0" />
+            <span className={`transition-opacity duration-300 leading-none opacity-100 w-full font-bold truncate`}>{t.studentRegistration}</span>
+          </button>
+          <div className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 h-10 ${
+            isDarkMode ? 'bg-gray-800' : 'bg-gray-700'
+          }`}>
             <BookOpen size={20} className="flex-shrink-0" />
             <span className={`transition-opacity duration-300 leading-none opacity-100 w-full font-bold truncate`}>{t.courseRegistration}</span>
-          </button>
+          </div>
           <button
             onClick={() => navigateToPage('course-enrollment')}
             className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 h-10 ${
@@ -547,241 +491,134 @@ export default function StudentRegistrationPage() {
             <div className={`${colors.bgCard} border ${colors.border} rounded-lg shadow-lg p-6`}>
             <form onSubmit={handleSubmit} className="space-y-6">
               
-              {/* Photo Upload Section */}
-              <div className="mb-8">
-                <label className={`block text-sm font-semibold mb-3 ${colors.textPrimary}`}>
-                  {t.studentPhoto} <span className="text-red-400">*</span>
-                </label>
-                <div className="flex flex-col md:flex-row gap-6">
-                  {/* Photo Preview/Upload Area */}
-                  <div className="flex-shrink-0">
-                    <div className={`w-48 h-48 ${colors.bgMain} border-2 ${colors.border} rounded-xl flex items-center justify-center overflow-hidden relative`}>
-                      {photoPreview ? (
-                        <img 
-                          src={photoPreview} 
-                          alt="Student preview" 
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="text-center p-4">
-                          <Camera className={`${colors.textSecondary} mx-auto mb-2`} size={32} />
-                          <p className={`text-xs ${colors.textSecondary}`}>{t.noPhoto}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {/* Upload Button */}
-                  <div className="flex-1 flex flex-col justify-center">
-                    <label className={`${colors.bgMain} border-2 border-dashed ${colors.border} rounded-xl p-6 cursor-pointer hover:border-purple-500 transition-colors`}>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handlePhotoChange}
-                        className="hidden"
-                      />
-                      <div className="text-center">
-                        <Upload className={`${colors.textPurple} mx-auto mb-2`} size={24} />
-                        <p className={`text-sm font-medium ${colors.textPrimary} mb-1`}>
-                          {t.clickToUpload}
-                        </p>
-                        <p className={`text-xs ${colors.textSecondary}`}>
-                          PNG, JPG up to 5MB
-                        </p>
-                      </div>
-                    </label>
-                    {errors.photo && (
-                      <p className="text-red-400 text-xs mt-2 flex items-center gap-1">
-                        <XCircle size={12} />
-                        {errors.photo}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
               {/* Form Fields Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 
-                {/* Student Number */}
+                {/* Course Code */}
                 <div>
                   <label className={`block text-sm font-semibold mb-2 ${colors.textPrimary}`}>
-                    {t.studentNumber} <span className="text-red-400">*</span>
+                    {t.courseCode} <span className="text-red-400">*</span>
                   </label>
                   <input
                     type="text"
-                    name="studentNumber"
-                    value={formData.studentNumber}
+                    name="courseCode"
+                    value={formData.courseCode}
                     onChange={handleInputChange}
                     className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${
-                      errors.studentNumber
+                      errors.courseCode
                         ? `${isDarkMode ? 'bg-gray-700' : 'bg-red-50'} border-2 border-red-500 ${colors.textPrimary}`
                         : `${colors.bgMain} border ${colors.border} ${colors.textPrimary} placeholder-gray-500 focus:ring-purple-500 focus:border-purple-500`
                     }`}
-                    placeholder={t.studentNumberPlaceholder}
+                    placeholder={t.courseCodePlaceholder}
                     required
                   />
-                  {errors.studentNumber && (
+                  {errors.courseCode && (
                     <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
                       <XCircle size={12} />
-                      {errors.studentNumber}
+                      {errors.courseCode}
                     </p>
                   )}
                 </div>
 
-                {/* Name */}
+                {/* Course Name */}
                 <div>
                   <label className={`block text-sm font-semibold mb-2 ${colors.textPrimary}`}>
-                    {t.name} <span className="text-red-400">*</span>
+                    {t.courseName} <span className="text-red-400">*</span>
                   </label>
                   <input
                     type="text"
-                    name="name"
-                    value={formData.name}
+                    name="courseName"
+                    value={formData.courseName}
                     onChange={handleInputChange}
                     className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${
-                      errors.name
+                      errors.courseName
                         ? `${isDarkMode ? 'bg-gray-700' : 'bg-red-50'} border-2 border-red-500 ${colors.textPrimary}`
                         : `${colors.bgMain} border ${colors.border} ${colors.textPrimary} placeholder-gray-500 focus:ring-purple-500 focus:border-purple-500`
                     }`}
-                    placeholder={t.namePlaceholder}
+                    placeholder={t.courseNamePlaceholder}
                     required
                   />
-                  {errors.name && (
+                  {errors.courseName && (
                     <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
                       <XCircle size={12} />
-                      {errors.name}
+                      {errors.courseName}
                     </p>
                   )}
                 </div>
 
-                {/* Surname */}
+                {/* Semester */}
                 <div>
                   <label className={`block text-sm font-semibold mb-2 ${colors.textPrimary}`}>
-                    {t.surname} <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="surname"
-                    value={formData.surname}
-                    onChange={handleInputChange}
-                    className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${
-                      errors.surname
-                        ? `${isDarkMode ? 'bg-gray-700' : 'bg-red-50'} border-2 border-red-500 ${colors.textPrimary}`
-                        : `${colors.bgMain} border ${colors.border} ${colors.textPrimary} placeholder-gray-500 focus:ring-purple-500 focus:border-purple-500`
-                    }`}
-                    placeholder={t.surnamePlaceholder}
-                    required
-                  />
-                  {errors.surname && (
-                    <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
-                      <XCircle size={12} />
-                      {errors.surname}
-                    </p>
-                  )}
-                </div>
-
-                {/* Department */}
-                <div>
-                  <label className={`block text-sm font-semibold mb-2 ${colors.textPrimary}`}>
-                    {t.department} <span className="text-red-400">*</span>
+                    {t.semester} <span className="text-red-400">*</span>
                   </label>
                   <select
-                    name="department"
-                    value={formData.department}
+                    name="semester"
+                    value={formData.semester}
                     onChange={handleInputChange}
                     className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${
-                      errors.department
+                      errors.semester
                         ? `${isDarkMode ? 'bg-gray-700' : 'bg-red-50'} border-2 border-red-500 ${colors.textPrimary}`
                         : `${colors.bgMain} border ${colors.border} ${colors.textPrimary} focus:ring-purple-500 focus:border-purple-500`
                     }`}
                     required
                   >
-                    <option value="">{t.selectDepartment}</option>
-                    <option value="CSE">Computer Science Engineering</option>
-                    <option value="EE">Electrical Engineering</option>
-                    <option value="ME">Mechanical Engineering</option>
-                    <option value="CE">Civil Engineering</option>
-                    <option value="IE">Industrial Engineering</option>
+                    <option value="">{t.selectSemester}</option>
+                    <option value="Fall">Fall</option>
+                    <option value="Spring">Spring</option>
+                    <option value="Summer">Summer</option>
                   </select>
-                  {errors.department && (
+                  {errors.semester && (
                     <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
                       <XCircle size={12} />
-                      {errors.department}
+                      {errors.semester}
                     </p>
                   )}
                 </div>
 
-                {/* Class */}
+                {/* Academic Year */}
                 <div>
                   <label className={`block text-sm font-semibold mb-2 ${colors.textPrimary}`}>
-                    {t.class} <span className="text-red-400">*</span>
+                    {t.academicYear} <span className="text-red-400">*</span>
                   </label>
                   <select
-                    name="class"
-                    value={formData.class}
+                    name="academicYear"
+                    value={formData.academicYear}
                     onChange={handleInputChange}
                     className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${
-                      errors.class
+                      errors.academicYear
                         ? `${isDarkMode ? 'bg-gray-700' : 'bg-red-50'} border-2 border-red-500 ${colors.textPrimary}`
                         : `${colors.bgMain} border ${colors.border} ${colors.textPrimary} focus:ring-purple-500 focus:border-purple-500`
                     }`}
                     required
                   >
-                    <option value="">{t.selectClass}</option>
-                    <option value="1">Class 1</option>
-                    <option value="2">Class 2</option>
-                    <option value="3">Class 3</option>
-                    <option value="4">Class 4</option>
+                    <option value="">{t.selectAcademicYear}</option>
+                    {academicYears.map((year) => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
                   </select>
-                  {errors.class && (
+                  {errors.academicYear && (
                     <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
                       <XCircle size={12} />
-                      {errors.class}
+                      {errors.academicYear}
                     </p>
                   )}
                 </div>
 
-                {/* Email */}
-                <div>
-                  <label className={`block text-sm font-semibold mb-2 ${colors.textPrimary}`}>
-                    {t.email}
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${
-                      errors.email
-                        ? `${isDarkMode ? 'bg-gray-700' : 'bg-red-50'} border-2 border-red-500 ${colors.textPrimary}`
-                        : `${colors.bgMain} border ${colors.border} ${colors.textPrimary} placeholder-gray-500 focus:ring-purple-500 focus:border-purple-500`
-                    }`}
-                    placeholder={t.emailPlaceholder}
-                  />
-                  {errors.email && (
-                    <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
-                      <XCircle size={12} />
-                      {errors.email}
-                    </p>
-                  )}
-                </div>
+              </div>
 
-                {/* Phone */}
-                <div>
-                  <label className={`block text-sm font-semibold mb-2 ${colors.textPrimary}`}>
-                    {t.phone}
-                  </label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${colors.bgMain} border ${colors.border} ${colors.textPrimary} placeholder-gray-500 focus:ring-purple-500 focus:border-purple-500`}
-                    placeholder={t.phonePlaceholder}
-                  />
-                </div>
-
+              {/* Course Description */}
+              <div>
+                <label className={`block text-sm font-semibold mb-2 ${colors.textPrimary}`}>
+                  {t.courseDescription}
+                </label>
+                <textarea
+                  name="courseDescription"
+                  value={formData.courseDescription}
+                  onChange={handleInputChange}
+                  rows={4}
+                  className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${colors.bgMain} border ${colors.border} ${colors.textPrimary} placeholder-gray-500 focus:ring-purple-500 focus:border-purple-500`}
+                  placeholder={t.courseDescriptionPlaceholder}
+                />
               </div>
 
               {/* Submit Button */}
@@ -793,22 +630,18 @@ export default function StudentRegistrationPage() {
                     colors.accentPurple
                   } hover:opacity-90`}
                 >
-                  {isSubmitting ? t.registering : t.registerStudent}
+                  {isSubmitting ? t.registering : t.registerCourse}
                 </button>
                 <button
                   type="button"
                   onClick={() => {
                     setFormData({
-                      studentNumber: '',
-                      name: '',
-                      surname: '',
-                      department: '',
-                      class: '',
-                      email: '',
-                      phone: ''
+                      courseCode: '',
+                      courseName: '',
+                      courseDescription: '',
+                      semester: '',
+                      academicYear: ''
                     });
-                    setPhoto(null);
-                    setPhotoPreview(null);
                     setErrors({});
                   }}
                   className={`px-6 py-3 border ${colors.border} ${colors.textSecondary} font-semibold rounded-lg transition-all hover:${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'}`}
@@ -825,3 +658,5 @@ export default function StudentRegistrationPage() {
     </div>
   );
 }
+
+
