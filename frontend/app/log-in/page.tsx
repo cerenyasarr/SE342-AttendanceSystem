@@ -1,53 +1,82 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Globe, Moon, Sun } from 'lucide-react';
+import { Globe, Moon, Sun, UserPlus, LogIn } from 'lucide-react';
 import Image from 'next/image';
 
-// Translations
+// Translations - Yeni kayıt alanları eklendi
 const translations = {
   tr: {
     title: "Maltepe Üniversitesi",
     subtitle: "Otomatik Yoklama Sistemi",
     logIn: "Giriş Yap",
-    enterCredentials: "Sisteme erişmek için bilgilerinizi girin",
-    username: "Kullanıcı Adı / Öğrenci Numarası",
+    signUp: "Kayıt Ol",
+    toggleToSignUp: "Öğretmen hesabı oluşturunuz.",
+    toggleToLogin: "Zaten hesabınız var mı? Giriş yapın",
+    enterCredentials: "Sisteme erişmek için bilgilerinizi giriniz.",
+    createAccount: "Yeni öğretmen hesabı oluşturun",
+    name: "Ad",
+    surname: "Soyad",
+    email: "Kurumsal E-posta",
+    username: "Kullanıcı Adı",
     password: "Şifre",
-    usernamePlaceholder: "Örn: emreolca, 2024001",
+    confirmPassword: "Şifre Tekrar",
+    usernamePlaceholder: "Örn: emreolca",
     passwordPlaceholder: "••••••••",
     demoAccounts: "Demo Hesaplar:",
     instructor: "Öğretmen: emreolca / emreolca",
     student: "Öğrenci: 2024001 / herhangi",
     lightMode: "Açık Tema",
-    darkMode: "Koyu Tema"
+    darkMode: "Koyu Tema",
+    registerSuccess: "Kayıt başarılı! Lütfen giriş yapın."
   },
   en: {
     title: "Maltepe University",
     subtitle: "Automatic Attendance System",
     logIn: "Log In",
+    signUp: "Sign Up",
+    toggleToSignUp: "Create an instructor account",
+    toggleToLogin: "Already have an account? Log in",
     enterCredentials: "Enter your credentials to access the system",
-    username: "Username / Student ID",
+    createAccount: "Create a new instructor account",
+    name: "Name",
+    surname: "Surname",
+    email: "Institutional Email",
+    username: "Username",
     password: "Password",
-    usernamePlaceholder: "Ex: instructor, 2024001",
+    confirmPassword: "Confirm Password",
+    usernamePlaceholder: "Ex: instructor",
     passwordPlaceholder: "••••••••",
     demoAccounts: "Demo Accounts:",
     instructor: "Instructor: emreolca / emreolca",
     student: "Student: 2024001 / any",
     lightMode: "Light Mode",
-    darkMode: "Dark Mode"
+    darkMode: "Dark Mode",
+    registerSuccess: "Registration successful! Please log in."
   }
 };
 
 export default function LoginPage() {
+  // Login States
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  
+  // Register States
+  const [regName, setRegName] = useState('');
+  const [regSurname, setRegSurname] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regUsername, setRegUsername] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [regConfirmPassword, setRegConfirmPassword] = useState('');
+
+  // UI States
+  const [isLoginMode, setIsLoginMode] = useState(true); // true = Login, false = Register
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [language, setLanguage] = useState<'tr' | 'en'>('en');
   const [mounted, setMounted] = useState(false);
 
   const t = translations[language];
 
-  // Sistem tercihini kontrol et
   useEffect(() => {
     setMounted(true);
     const savedMode = localStorage.getItem('darkMode');
@@ -77,21 +106,33 @@ export default function LoginPage() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Demo hesaplar için kontrol
+    // Demo logic remains the same
     if (username === 'emreolca' && password === 'emreolca') {
-      // Instructor için teacher-live-attendance sayfasına yönlendir
       window.location.href = '/?page=teacher-live-attendance';
       return;
     }
-    
     if (username === '2024001') {
-      // Student için student-reports sayfasına yönlendir
       window.location.href = '/?page=student-reports';
       return;
     }
-    
-    // Diğer durumlar için varsayılan olarak teacher-live-attendance
+    // Default fallback
     window.location.href = '/?page=teacher-live-attendance';
+  };
+
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Burada backend kayıt işlemi yapılacak (Supabase/Firebase/API)
+    
+    if (regPassword !== regConfirmPassword) {
+      alert(language === 'en' ? "Passwords do not match!" : "Şifreler eşleşmiyor!");
+      return;
+    }
+
+    console.log("Registering:", { regName, regSurname, regEmail, regUsername });
+    
+    // Başarılı kayıt simülasyonu
+    alert(t.registerSuccess);
+    setIsLoginMode(true); // Giriş ekranına geri dön
   };
 
   const handleQuickLogin = (userType: 'instructor' | 'student') => {
@@ -113,14 +154,14 @@ export default function LoginPage() {
   if (!mounted) return null;
 
   return (
-    <div className={`min-h-screen w-full flex flex-col items-center justify-center relative font-sans transition-colors duration-300 ${
+    <div className={`min-h-screen w-full flex flex-col items-center justify-center relative font-sans transition-colors duration-300 py-10 ${
       isDarkMode 
         ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-black' 
         : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'
     }`}>
       
       {/* Top Right Icons */}
-      <div className="absolute top-2 right-2 sm:top-4 sm:right-4 flex items-center gap-2 sm:gap-3">
+      <div className="absolute top-2 right-2 sm:top-4 sm:right-4 flex items-center gap-2 sm:gap-3 z-10">
         <button 
           onClick={toggleLanguage}
           className={`flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 rounded-md text-xs sm:text-sm transition ${
@@ -145,139 +186,236 @@ export default function LoginPage() {
         </button>
       </div>
 
-      {/* Logo and Title Area */}
-      <div className="text-center mb-4 sm:mb-8 px-4">
-        {/* Logo Image */}
-        <div className="mx-auto mb-2 sm:mb-4 flex items-center justify-center">
-          <Image 
-            src="/maltepe-uni-logo.svg" 
-            alt="Maltepe University Logo" 
-            width={120}
-            height={105}
-            priority
-            className={`transition-all ${isDarkMode ? 'filter drop-shadow-lg' : ''} w-24 h-20 sm:w-40 sm:h-35`}
-          />
-        </div>
+      {/* Main Container */}
+      <div className="w-full max-w-[450px] px-4 flex flex-col items-center">
         
-        <h1 className={`text-2xl sm:text-3xl font-bold mb-1 tracking-wide transition-colors ${
-          isDarkMode ? 'text-white' : 'text-gray-800'
-        }`}>
-          {t.title}
-        </h1>
-        <p className={`text-xs sm:text-sm font-light opacity-80 transition-colors ${
-          isDarkMode ? 'text-gray-300' : 'text-gray-600'
-        }`}>
-          {t.subtitle}
-        </p>
-      </div>
-
-      {/* Login Card */}
-      <div className={`w-full max-w-[450px] p-4 sm:p-8 rounded-xl sm:rounded-2xl shadow-2xl mx-4 transition-colors ${
-        isDarkMode
-          ? 'bg-gray-800 border border-gray-700'
-          : 'bg-white border border-gray-100'
-      }`}>
-        <div className="mb-4 sm:mb-6">
-          <h2 className={`text-lg sm:text-xl font-bold transition-colors ${
+        {/* Logo and Title Area */}
+        <div className="text-center mb-6">
+          <div className="mx-auto mb-4 flex items-center justify-center">
+            <Image 
+              src="/maltepe-uni-logo.svg" 
+              alt="Maltepe University Logo" 
+              width={120}
+              height={105}
+              priority
+              className={`transition-all ${isDarkMode ? 'filter drop-shadow-lg' : ''} w-24 h-20 sm:w-32 sm:h-28`}
+            />
+          </div>
+          
+          <h1 className={`text-2xl sm:text-3xl font-bold mb-1 tracking-wide transition-colors ${
             isDarkMode ? 'text-white' : 'text-gray-800'
-          }`}>{t.logIn}</h2>
-          <p className={`text-xs sm:text-sm mt-1 transition-colors ${
-            isDarkMode ? 'text-gray-400' : 'text-gray-500'
           }`}>
-            {t.enterCredentials}
+            {t.title}
+          </h1>
+          <p className={`text-xs sm:text-sm font-light opacity-80 transition-colors ${
+            isDarkMode ? 'text-gray-300' : 'text-gray-600'
+          }`}>
+            {t.subtitle}
           </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4 sm:space-y-5">
-          {/* Username Input */}
-          <div>
-            <label className={`block text-sm font-semibold mb-2 transition-colors ${
-              isDarkMode ? 'text-gray-300' : 'text-gray-700'
-            }`}>
-              {t.username}
-            </label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className={`w-full text-sm rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${
-                isDarkMode
-                  ? 'bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:ring-purple-500 focus:border-purple-500'
-                  : 'bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-purple-400 focus:border-purple-400'
-              }`}
-              placeholder={t.usernamePlaceholder}
-              required
-            />
-          </div>
-
-          {/* Password Input */}
-          <div>
-            <label className={`block text-sm font-semibold mb-2 transition-colors ${
-              isDarkMode ? 'text-gray-300' : 'text-gray-700'
-            }`}>
-              {t.password}
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className={`w-full text-sm rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${
-                isDarkMode
-                  ? 'bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:ring-purple-500 focus:border-purple-500'
-                  : 'bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-purple-400 focus:border-purple-400'
-              }`}
-              placeholder={t.passwordPlaceholder}
-              required
-            />
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            className={`w-full text-white font-semibold rounded-lg text-sm px-5 py-3.5 text-center transition-all shadow-md hover:shadow-lg ${
-              isDarkMode
-                ? 'bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800'
-                : 'bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800'
-            }`}
-          >
-            {t.logIn}
-          </button>
-        </form>
-
-        {/* Demo Accounts Box */}
-        <div className={`mt-4 sm:mt-8 rounded-lg sm:rounded-xl p-3 sm:p-4 border transition-colors ${
+        {/* Auth Card */}
+        <div className={`w-full p-6 sm:p-8 rounded-xl sm:rounded-2xl shadow-2xl transition-colors duration-300 ${
           isDarkMode
-            ? 'bg-gray-700/50 border-purple-600/30'
-            : 'bg-purple-50 border border-purple-100'
+            ? 'bg-gray-800 border border-gray-700'
+            : 'bg-white border border-gray-100'
         }`}>
-          <h3 className={`font-semibold text-xs sm:text-sm mb-2 sm:mb-3 transition-colors ${
-            isDarkMode ? 'text-purple-300' : 'text-purple-800'
-          }`}>{t.demoAccounts}</h3>
-          <div className="space-y-1.5 sm:space-y-2">
+          
+          <div className="mb-6">
+            <h2 className={`text-xl font-bold transition-colors flex items-center gap-2 ${
+              isDarkMode ? 'text-white' : 'text-gray-800'
+            }`}>
+              {isLoginMode ? <LogIn size={20}/> : <UserPlus size={20}/>}
+              {isLoginMode ? t.logIn : t.signUp}
+            </h2>
+            <p className={`text-xs sm:text-sm mt-1 transition-colors ${
+              isDarkMode ? 'text-gray-400' : 'text-gray-500'
+            }`}>
+              {isLoginMode ? t.enterCredentials : t.createAccount}
+            </p>
+          </div>
+
+          {/* Form Content */}
+          <form onSubmit={isLoginMode ? handleLogin : handleRegister} className="space-y-4">
+            
+            {/* Register Specific Fields */}
+            {!isLoginMode && (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={`block text-xs font-semibold mb-1.5 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      {t.name}
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={regName}
+                      onChange={(e) => setRegName(e.target.value)}
+                      className={`w-full text-sm rounded-lg p-2.5 transition-all ${
+                        isDarkMode
+                          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-purple-500'
+                          : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-purple-400'
+                      }`}
+                    />
+                  </div>
+                  <div>
+                    <label className={`block text-xs font-semibold mb-1.5 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      {t.surname}
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={regSurname}
+                      onChange={(e) => setRegSurname(e.target.value)}
+                      className={`w-full text-sm rounded-lg p-2.5 transition-all ${
+                        isDarkMode
+                          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-purple-500'
+                          : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-purple-400'
+                      }`}
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className={`block text-xs font-semibold mb-1.5 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    {t.email}
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={regEmail}
+                    onChange={(e) => setRegEmail(e.target.value)}
+                    className={`w-full text-sm rounded-lg p-2.5 transition-all ${
+                      isDarkMode
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-purple-500'
+                        : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-purple-400'
+                    }`}
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Common Fields (Username/Password logic differs slightly but using separate states for clarity) */}
+            <div>
+              <label className={`block text-xs font-semibold mb-1.5 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                {t.username}
+              </label>
+              <input
+                type="text"
+                required
+                value={isLoginMode ? username : regUsername}
+                onChange={(e) => isLoginMode ? setUsername(e.target.value) : setRegUsername(e.target.value)}
+                className={`w-full text-sm rounded-lg p-3 transition-all ${
+                  isDarkMode
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-purple-500'
+                    : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-purple-400'
+                }`}
+                placeholder={isLoginMode ? t.usernamePlaceholder : ''}
+              />
+            </div>
+
+            <div>
+              <label className={`block text-xs font-semibold mb-1.5 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                {t.password}
+              </label>
+              <input
+                type="password"
+                required
+                value={isLoginMode ? password : regPassword}
+                onChange={(e) => isLoginMode ? setPassword(e.target.value) : setRegPassword(e.target.value)}
+                className={`w-full text-sm rounded-lg p-3 transition-all ${
+                  isDarkMode
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-purple-500'
+                    : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-purple-400'
+                }`}
+                placeholder={isLoginMode ? t.passwordPlaceholder : ''}
+              />
+            </div>
+
+            {!isLoginMode && (
+              <div>
+                <label className={`block text-xs font-semibold mb-1.5 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  {t.confirmPassword}
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={regConfirmPassword}
+                  onChange={(e) => setRegConfirmPassword(e.target.value)}
+                  className={`w-full text-sm rounded-lg p-3 transition-all ${
+                    isDarkMode
+                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-purple-500'
+                      : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-purple-400'
+                  }`}
+                />
+              </div>
+            )}
+
             <button
-              onClick={() => handleQuickLogin('instructor')}
-              className={`w-full text-left px-3 py-2 rounded-lg transition-all text-xs font-mono ${
-                isDarkMode 
-                  ? 'bg-gray-600/50 hover:bg-gray-600 text-gray-200 hover:text-white' 
-                  : 'bg-white hover:bg-purple-100 text-gray-700 hover:text-purple-800'
-              } border ${isDarkMode ? 'border-gray-600' : 'border-purple-200'}`}
+              type="submit"
+              className={`w-full text-white font-semibold rounded-lg text-sm px-5 py-3.5 text-center transition-all shadow-md hover:shadow-lg mt-2 ${
+                isDarkMode
+                  ? 'bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800'
+                  : 'bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800'
+              }`}
             >
-              • {t.instructor}
+              {isLoginMode ? t.logIn : t.signUp}
             </button>
+          </form>
+
+          {/* Toggle Login/Register */}
+          <div className="mt-6 text-center">
             <button
-              onClick={() => handleQuickLogin('student')}
-              className={`w-full text-left px-3 py-2 rounded-lg transition-all text-xs font-mono ${
-                isDarkMode 
-                  ? 'bg-gray-600/50 hover:bg-gray-600 text-gray-200 hover:text-white' 
-                  : 'bg-white hover:bg-purple-100 text-gray-700 hover:text-purple-800'
-              } border ${isDarkMode ? 'border-gray-600' : 'border-purple-200'}`}
+              onClick={() => {
+                setIsLoginMode(!isLoginMode);
+                // Formları temizle
+                setUsername(''); setPassword('');
+                setRegName(''); setRegSurname(''); setRegEmail(''); setRegUsername(''); setRegPassword(''); setRegConfirmPassword('');
+              }}
+              className={`text-sm font-medium hover:underline transition-colors ${
+                isDarkMode ? 'text-purple-400 hover:text-purple-300' : 'text-purple-600 hover:text-purple-800'
+              }`}
             >
-              • {t.student}
+              {isLoginMode ? t.toggleToSignUp : t.toggleToLogin}
             </button>
           </div>
+
+          {/* Demo Accounts (Only show in Login Mode) */}
+          {isLoginMode && (
+            <div className={`mt-6 rounded-lg p-3 sm:p-4 border transition-colors ${
+              isDarkMode
+                ? 'bg-gray-700/50 border-purple-600/30'
+                : 'bg-purple-50 border border-purple-100'
+            }`}>
+              <h3 className={`font-semibold text-xs sm:text-sm mb-2 transition-colors ${
+                isDarkMode ? 'text-purple-300' : 'text-purple-800'
+              }`}>{t.demoAccounts}</h3>
+              <div className="space-y-2">
+                <button
+                  onClick={() => handleQuickLogin('instructor')}
+                  className={`w-full text-left px-3 py-2 rounded-lg transition-all text-xs font-mono ${
+                    isDarkMode 
+                      ? 'bg-gray-600/50 hover:bg-gray-600 text-gray-200 hover:text-white' 
+                      : 'bg-white hover:bg-purple-100 text-gray-700 hover:text-purple-800'
+                  } border ${isDarkMode ? 'border-gray-600' : 'border-purple-200'}`}
+                >
+                  • {t.instructor}
+                </button>
+                <button
+                  onClick={() => handleQuickLogin('student')}
+                  className={`w-full text-left px-3 py-2 rounded-lg transition-all text-xs font-mono ${
+                    isDarkMode 
+                      ? 'bg-gray-600/50 hover:bg-gray-600 text-gray-200 hover:text-white' 
+                      : 'bg-white hover:bg-purple-100 text-gray-700 hover:text-purple-800'
+                  } border ${isDarkMode ? 'border-gray-600' : 'border-purple-200'}`}
+                >
+                  • {t.student}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-      
     </div>
   );
 }
