@@ -54,6 +54,8 @@ class Instructor(db.Model):
     id = db.Column(db.String, primary_key=True, default=generate_uuid)
     user_id = db.Column(db.String, db.ForeignKey('user.id'), nullable=False)
     title = db.Column(db.String, nullable=True)
+    username = db.Column(db.String, unique=True, nullable=False)
+    email = db.Column(db.String, unique=True, nullable=False)
     department_id = db.Column(db.String, db.ForeignKey('department.id'), nullable=False)
 
     courses = db.relationship('Course', backref='instructor', lazy=True)

@@ -60,7 +60,7 @@ export default function LoginPage() {
   // Login States
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  
+
   // Register States
   const [regName, setRegName] = useState('');
   const [regSurname, setRegSurname] = useState('');
@@ -68,6 +68,8 @@ export default function LoginPage() {
   const [regUsername, setRegUsername] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
+  const [regTitle, setRegTitle] = useState('');
+  const [regDepartment, setRegDepartment] = useState('');
 
   // UI States
   const [isLoginMode, setIsLoginMode] = useState(true); // true = Login, false = Register
@@ -105,7 +107,7 @@ export default function LoginPage() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Demo logic remains the same
     if (username === 'emreolca' && password === 'emreolca') {
       window.location.href = '/?page=teacher-live-attendance';
@@ -119,20 +121,44 @@ export default function LoginPage() {
     window.location.href = '/?page=teacher-live-attendance';
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Burada backend kayıt işlemi yapılacak (Supabase/Firebase/API)
-    
+
     if (regPassword !== regConfirmPassword) {
       alert(language === 'en' ? "Passwords do not match!" : "Şifreler eşleşmiyor!");
       return;
     }
 
-    console.log("Registering:", { regName, regSurname, regEmail, regUsername });
-    
-    // Başarılı kayıt simülasyonu
-    alert(t.registerSuccess);
-    setIsLoginMode(true); // Giriş ekranına geri dön
+    try {
+      const response = await fetch('http://127.0.0.1:5001/api/instructors', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          first_name: regName,
+          last_name: regSurname,
+          username: regUsername,
+          email: regEmail,
+          password: regPassword,
+          title: regTitle,
+          department: regDepartment
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Registration failed');
+      }
+
+      alert(t.registerSuccess);
+      setIsLoginMode(true);
+      // Reset form
+      setRegName(''); setRegSurname(''); setRegEmail(''); setRegUsername('');
+      setRegPassword(''); setRegConfirmPassword(''); setRegTitle(''); setRegDepartment('');
+    } catch (error: any) {
+      alert(error.message);
+    }
   };
 
   const handleQuickLogin = (userType: 'instructor' | 'student') => {
@@ -154,32 +180,29 @@ export default function LoginPage() {
   if (!mounted) return null;
 
   return (
-    <div className={`min-h-screen w-full flex flex-col items-center justify-center relative font-sans transition-colors duration-300 py-10 ${
-      isDarkMode 
-        ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-black' 
-        : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'
-    }`}>
-      
+    <div className={`min-h-screen w-full flex flex-col items-center justify-center relative font-sans transition-colors duration-300 py-10 ${isDarkMode
+      ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-black'
+      : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'
+      }`}>
+
       {/* Top Right Icons */}
       <div className="absolute top-2 right-2 sm:top-4 sm:right-4 flex items-center gap-2 sm:gap-3 z-10">
-        <button 
+        <button
           onClick={toggleLanguage}
-          className={`flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 rounded-md text-xs sm:text-sm transition ${
-            isDarkMode
-              ? 'bg-white/10 hover:bg-white/20 text-white'
-              : 'bg-black/10 hover:bg-black/20 text-gray-800'
-          }`}
+          className={`flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 rounded-md text-xs sm:text-sm transition ${isDarkMode
+            ? 'bg-white/10 hover:bg-white/20 text-white'
+            : 'bg-black/10 hover:bg-black/20 text-gray-800'
+            }`}
         >
           <Globe size={14} className="sm:w-4 sm:h-4" />
           <span className="hidden sm:inline">{language.toUpperCase()}</span>
         </button>
-        <button 
+        <button
           onClick={toggleDarkMode}
-          className={`p-1.5 sm:p-2 rounded-full transition ${
-            isDarkMode
-              ? 'bg-white/10 hover:bg-white/20 text-yellow-300'
-              : 'bg-black/10 hover:bg-black/20 text-gray-800'
-          }`}
+          className={`p-1.5 sm:p-2 rounded-full transition ${isDarkMode
+            ? 'bg-white/10 hover:bg-white/20 text-yellow-300'
+            : 'bg-black/10 hover:bg-black/20 text-gray-800'
+            }`}
           title={isDarkMode ? t.lightMode : t.darkMode}
         >
           {isDarkMode ? <Sun size={14} className="sm:w-4 sm:h-4" /> : <Moon size={14} className="sm:w-4 sm:h-4" />}
@@ -188,56 +211,51 @@ export default function LoginPage() {
 
       {/* Main Container */}
       <div className="w-full max-w-[450px] px-4 flex flex-col items-center">
-        
+
         {/* Logo and Title Area */}
         <div className="text-center mb-6">
           <div className="mx-auto mb-4 flex items-center justify-center">
-            <Image 
-              src="/maltepe-uni-logo.svg" 
-              alt="Maltepe University Logo" 
+            <Image
+              src="/maltepe-uni-logo.svg"
+              alt="Maltepe University Logo"
               width={120}
               height={105}
               priority
               className={`transition-all ${isDarkMode ? 'filter drop-shadow-lg' : ''} w-24 h-20 sm:w-32 sm:h-28`}
             />
           </div>
-          
-          <h1 className={`text-2xl sm:text-3xl font-bold mb-1 tracking-wide transition-colors ${
-            isDarkMode ? 'text-white' : 'text-gray-800'
-          }`}>
+
+          <h1 className={`text-2xl sm:text-3xl font-bold mb-1 tracking-wide transition-colors ${isDarkMode ? 'text-white' : 'text-gray-800'
+            }`}>
             {t.title}
           </h1>
-          <p className={`text-xs sm:text-sm font-light opacity-80 transition-colors ${
-            isDarkMode ? 'text-gray-300' : 'text-gray-600'
-          }`}>
+          <p className={`text-xs sm:text-sm font-light opacity-80 transition-colors ${isDarkMode ? 'text-gray-300' : 'text-gray-600'
+            }`}>
             {t.subtitle}
           </p>
         </div>
 
         {/* Auth Card */}
-        <div className={`w-full p-6 sm:p-8 rounded-xl sm:rounded-2xl shadow-2xl transition-colors duration-300 ${
-          isDarkMode
-            ? 'bg-gray-800 border border-gray-700'
-            : 'bg-white border border-gray-100'
-        }`}>
-          
+        <div className={`w-full p-6 sm:p-8 rounded-xl sm:rounded-2xl shadow-2xl transition-colors duration-300 ${isDarkMode
+          ? 'bg-gray-800 border border-gray-700'
+          : 'bg-white border border-gray-100'
+          }`}>
+
           <div className="mb-6">
-            <h2 className={`text-xl font-bold transition-colors flex items-center gap-2 ${
-              isDarkMode ? 'text-white' : 'text-gray-800'
-            }`}>
-              {isLoginMode ? <LogIn size={20}/> : <UserPlus size={20}/>}
+            <h2 className={`text-xl font-bold transition-colors flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-800'
+              }`}>
+              {isLoginMode ? <LogIn size={20} /> : <UserPlus size={20} />}
               {isLoginMode ? t.logIn : t.signUp}
             </h2>
-            <p className={`text-xs sm:text-sm mt-1 transition-colors ${
-              isDarkMode ? 'text-gray-400' : 'text-gray-500'
-            }`}>
+            <p className={`text-xs sm:text-sm mt-1 transition-colors ${isDarkMode ? 'text-gray-400' : 'text-gray-500'
+              }`}>
               {isLoginMode ? t.enterCredentials : t.createAccount}
             </p>
           </div>
 
           {/* Form Content */}
           <form onSubmit={isLoginMode ? handleLogin : handleRegister} className="space-y-4">
-            
+
             {/* Register Specific Fields */}
             {!isLoginMode && (
               <>
@@ -251,11 +269,10 @@ export default function LoginPage() {
                       required
                       value={regName}
                       onChange={(e) => setRegName(e.target.value)}
-                      className={`w-full text-sm rounded-lg p-2.5 transition-all ${
-                        isDarkMode
-                          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-purple-500'
-                          : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-purple-400'
-                      }`}
+                      className={`w-full text-sm rounded-lg p-2.5 transition-all ${isDarkMode
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-purple-500'
+                        : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-purple-400'
+                        }`}
                     />
                   </div>
                   <div>
@@ -267,15 +284,14 @@ export default function LoginPage() {
                       required
                       value={regSurname}
                       onChange={(e) => setRegSurname(e.target.value)}
-                      className={`w-full text-sm rounded-lg p-2.5 transition-all ${
-                        isDarkMode
-                          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-purple-500'
-                          : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-purple-400'
-                      }`}
+                      className={`w-full text-sm rounded-lg p-2.5 transition-all ${isDarkMode
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-purple-500'
+                        : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-purple-400'
+                        }`}
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <label className={`block text-xs font-semibold mb-1.5 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                     {t.email}
@@ -285,12 +301,46 @@ export default function LoginPage() {
                     required
                     value={regEmail}
                     onChange={(e) => setRegEmail(e.target.value)}
-                    className={`w-full text-sm rounded-lg p-2.5 transition-all ${
-                      isDarkMode
+                    className={`w-full text-sm rounded-lg p-2.5 transition-all ${isDarkMode
+                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-purple-500'
+                      : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-purple-400'
+                      }`}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={`block text-xs font-semibold mb-1.5 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      {language === 'en' ? 'Title' : 'Ünvan'}
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={regTitle}
+                      onChange={(e) => setRegTitle(e.target.value)}
+                      placeholder={language === 'en' ? 'Dr.' : 'Dr.'}
+                      className={`w-full text-sm rounded-lg p-2.5 transition-all ${isDarkMode
                         ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-purple-500'
                         : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-purple-400'
-                    }`}
-                  />
+                        }`}
+                    />
+                  </div>
+                  <div>
+                    <label className={`block text-xs font-semibold mb-1.5 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      {language === 'en' ? 'Department' : 'Bölüm'}
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={regDepartment}
+                      onChange={(e) => setRegDepartment(e.target.value)}
+                      placeholder={language === 'en' ? 'Engineering' : 'Mühendislik'}
+                      className={`w-full text-sm rounded-lg p-2.5 transition-all ${isDarkMode
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-purple-500'
+                        : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-purple-400'
+                        }`}
+                    />
+                  </div>
                 </div>
               </>
             )}
@@ -305,11 +355,10 @@ export default function LoginPage() {
                 required
                 value={isLoginMode ? username : regUsername}
                 onChange={(e) => isLoginMode ? setUsername(e.target.value) : setRegUsername(e.target.value)}
-                className={`w-full text-sm rounded-lg p-3 transition-all ${
-                  isDarkMode
-                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-purple-500'
-                    : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-purple-400'
-                }`}
+                className={`w-full text-sm rounded-lg p-3 transition-all ${isDarkMode
+                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-purple-500'
+                  : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-purple-400'
+                  }`}
                 placeholder={isLoginMode ? t.usernamePlaceholder : ''}
               />
             </div>
@@ -323,11 +372,10 @@ export default function LoginPage() {
                 required
                 value={isLoginMode ? password : regPassword}
                 onChange={(e) => isLoginMode ? setPassword(e.target.value) : setRegPassword(e.target.value)}
-                className={`w-full text-sm rounded-lg p-3 transition-all ${
-                  isDarkMode
-                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-purple-500'
-                    : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-purple-400'
-                }`}
+                className={`w-full text-sm rounded-lg p-3 transition-all ${isDarkMode
+                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-purple-500'
+                  : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-purple-400'
+                  }`}
                 placeholder={isLoginMode ? t.passwordPlaceholder : ''}
               />
             </div>
@@ -342,22 +390,20 @@ export default function LoginPage() {
                   required
                   value={regConfirmPassword}
                   onChange={(e) => setRegConfirmPassword(e.target.value)}
-                  className={`w-full text-sm rounded-lg p-3 transition-all ${
-                    isDarkMode
-                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-purple-500'
-                      : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-purple-400'
-                  }`}
+                  className={`w-full text-sm rounded-lg p-3 transition-all ${isDarkMode
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-purple-500'
+                    : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-purple-400'
+                    }`}
                 />
               </div>
             )}
 
             <button
               type="submit"
-              className={`w-full text-white font-semibold rounded-lg text-sm px-5 py-3.5 text-center transition-all shadow-md hover:shadow-lg mt-2 ${
-                isDarkMode
-                  ? 'bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800'
-                  : 'bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800'
-              }`}
+              className={`w-full text-white font-semibold rounded-lg text-sm px-5 py-3.5 text-center transition-all shadow-md hover:shadow-lg mt-2 ${isDarkMode
+                ? 'bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800'
+                : 'bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800'
+                }`}
             >
               {isLoginMode ? t.logIn : t.signUp}
             </button>
@@ -372,9 +418,8 @@ export default function LoginPage() {
                 setUsername(''); setPassword('');
                 setRegName(''); setRegSurname(''); setRegEmail(''); setRegUsername(''); setRegPassword(''); setRegConfirmPassword('');
               }}
-              className={`text-sm font-medium hover:underline transition-colors ${
-                isDarkMode ? 'text-purple-400 hover:text-purple-300' : 'text-purple-600 hover:text-purple-800'
-              }`}
+              className={`text-sm font-medium hover:underline transition-colors ${isDarkMode ? 'text-purple-400 hover:text-purple-300' : 'text-purple-600 hover:text-purple-800'
+                }`}
             >
               {isLoginMode ? t.toggleToSignUp : t.toggleToLogin}
             </button>
@@ -382,32 +427,28 @@ export default function LoginPage() {
 
           {/* Demo Accounts (Only show in Login Mode) */}
           {isLoginMode && (
-            <div className={`mt-6 rounded-lg p-3 sm:p-4 border transition-colors ${
-              isDarkMode
-                ? 'bg-gray-700/50 border-purple-600/30'
-                : 'bg-purple-50 border border-purple-100'
-            }`}>
-              <h3 className={`font-semibold text-xs sm:text-sm mb-2 transition-colors ${
-                isDarkMode ? 'text-purple-300' : 'text-purple-800'
-              }`}>{t.demoAccounts}</h3>
+            <div className={`mt-6 rounded-lg p-3 sm:p-4 border transition-colors ${isDarkMode
+              ? 'bg-gray-700/50 border-purple-600/30'
+              : 'bg-purple-50 border border-purple-100'
+              }`}>
+              <h3 className={`font-semibold text-xs sm:text-sm mb-2 transition-colors ${isDarkMode ? 'text-purple-300' : 'text-purple-800'
+                }`}>{t.demoAccounts}</h3>
               <div className="space-y-2">
                 <button
                   onClick={() => handleQuickLogin('instructor')}
-                  className={`w-full text-left px-3 py-2 rounded-lg transition-all text-xs font-mono ${
-                    isDarkMode 
-                      ? 'bg-gray-600/50 hover:bg-gray-600 text-gray-200 hover:text-white' 
-                      : 'bg-white hover:bg-purple-100 text-gray-700 hover:text-purple-800'
-                  } border ${isDarkMode ? 'border-gray-600' : 'border-purple-200'}`}
+                  className={`w-full text-left px-3 py-2 rounded-lg transition-all text-xs font-mono ${isDarkMode
+                    ? 'bg-gray-600/50 hover:bg-gray-600 text-gray-200 hover:text-white'
+                    : 'bg-white hover:bg-purple-100 text-gray-700 hover:text-purple-800'
+                    } border ${isDarkMode ? 'border-gray-600' : 'border-purple-200'}`}
                 >
                   • {t.instructor}
                 </button>
                 <button
                   onClick={() => handleQuickLogin('student')}
-                  className={`w-full text-left px-3 py-2 rounded-lg transition-all text-xs font-mono ${
-                    isDarkMode 
-                      ? 'bg-gray-600/50 hover:bg-gray-600 text-gray-200 hover:text-white' 
-                      : 'bg-white hover:bg-purple-100 text-gray-700 hover:text-purple-800'
-                  } border ${isDarkMode ? 'border-gray-600' : 'border-purple-200'}`}
+                  className={`w-full text-left px-3 py-2 rounded-lg transition-all text-xs font-mono ${isDarkMode
+                    ? 'bg-gray-600/50 hover:bg-gray-600 text-gray-200 hover:text-white'
+                    : 'bg-white hover:bg-purple-100 text-gray-700 hover:text-purple-800'
+                    } border ${isDarkMode ? 'border-gray-600' : 'border-purple-200'}`}
                 >
                   • {t.student}
                 </button>

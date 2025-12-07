@@ -216,13 +216,18 @@ def create_instructor():
         data = request.json or request.form
         first_name = data.get('first_name')
         last_name = data.get('last_name')
+        username = data.get('username')
+        password = data.get('password')
+        email = data.get('email')
         title = data.get('title')
         department_name = data.get('department')
-        email = data.get('email') # Assuming unique email requirement implies user email
 
-        if not all([first_name, last_name, department_name, email]):
+        if not all([first_name, last_name, username, password, email, department_name]):
              return jsonify({'error': 'Missing required fields'}), 400
              
+        if Instructor.query.filter((Instructor.username == username) | (Instructor.email == email)).first():
+            return jsonify({'error': 'Username or Email already exists'}), 409
+
         department = Department.query.filter_by(name=department_name).first()
         if not department:
             department = Department(name=department_name)
@@ -238,7 +243,7 @@ def create_instructor():
         new_user = User(
             first_name=first_name,
             last_name=last_name,
-            password="defaultPassword123",
+            password=password, # In production, hash this!
             role_id=role.id
         )
         db.session.add(new_user)
@@ -247,6 +252,8 @@ def create_instructor():
         new_instructor = Instructor(
             user_id=new_user.id,
             title=title,
+            username=username,
+            email=email,
             department_id=department.id
         )
         db.session.add(new_instructor)
