@@ -11,7 +11,7 @@ class Config:
     DB_HOST = os.getenv('DB_HOST')
     DB_PORT = os.getenv('DB_PORT')
     DB_NAME = os.getenv('DB_NAME')
-    DB_URL = os.getenv('DATABASE_URL', default=None)
+    DB_URL = os.getenv('DB_URL', default=None)
     print("Database URL:", DB_URL)
     SQLALCHEMY_DATABASE_URI = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}" if DB_URL is None else DB_URL
     
