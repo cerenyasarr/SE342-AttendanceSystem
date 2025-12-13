@@ -25,6 +25,8 @@ const translations = {
   TR: {
     title: "Öğrenci Kayıt",
     subtitle: "Yoklama sistemine yeni öğrenci kaydedin",
+    editTitle: "Öğrenci Düzenle", 
+    editSubtitle: "Mevcut öğrenci bilgilerini güncelleyin",
     studentPhoto: "Öğrenci Fotoğrafı",
     studentNumber: "Öğrenci Numarası",
     name: "Ad",
@@ -39,8 +41,10 @@ const translations = {
     noPhoto: "Fotoğraf yok",
     registerStudent: "Öğrenciyi Kaydet",
     registering: "Kaydediliyor...",
-    clearForm: "Formu Temizle",
-    success: "Öğrenci başarıyla kaydedildi!",
+    updateStudent: "Öğrenciyi Güncelle",
+    updating: "Güncelleniyor...",
+    clearForm: "Formu Temizle / İptal",
+    success: "İşlem başarıyla tamamlandı!",
     welcome: "Hoş geldiniz,",
     instructor: "Öğretmen",
     teacherAccount: "Öğretmen Hesabı",
@@ -68,6 +72,8 @@ const translations = {
   EN: {
     title: "Student Registration",
     subtitle: "Register a new student to the attendance system",
+    editTitle: "Edit Student",
+    editSubtitle: "Update existing student details",
     studentPhoto: "Student Photo",
     studentNumber: "Student Number",
     name: "Name",
@@ -82,8 +88,10 @@ const translations = {
     noPhoto: "No photo",
     registerStudent: "Register Student",
     registering: "Registering...",
-    clearForm: "Clear Form",
-    success: "Student registered successfully!",
+    updateStudent: "Update Student",
+    updating: "Updating...",
+    clearForm: "Clear Form / Cancel",
+    success: "Operation completed successfully!",
     welcome: "Welcome,",
     instructor: "Instructor",
     teacherAccount: "Teacher Account",
@@ -270,14 +278,12 @@ export default function StudentRegistrationPage() {
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
-    // 1. Öğrenci No Kontrolü
     if (!formData.studentNumber.trim()) {
       newErrors.studentNumber = `${t.studentNumber} ${t.required.toLowerCase()}`;
     } else if (!/^\d+$/.test(formData.studentNumber)) {
       newErrors.studentNumber = t.studentNumberError;
     }
 
-    // 2. İsim / Soyisim Kontrolü
     if (!formData.name.trim()) {
       newErrors.name = `${t.name} ${t.required.toLowerCase()}`;
     }
@@ -286,7 +292,6 @@ export default function StudentRegistrationPage() {
       newErrors.surname = `${t.surname} ${t.required.toLowerCase()}`;
     }
 
-    // 3. Bölüm / Sınıf Kontrolü
     if (!formData.department) {
       newErrors.department = `${t.department} ${t.required.toLowerCase()}`;
     }
@@ -295,20 +300,17 @@ export default function StudentRegistrationPage() {
       newErrors.class = `${t.class} ${t.required.toLowerCase()}`;
     }
 
-    // 4. Email Regex Kontrolü
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (formData.email && !emailRegex.test(formData.email)) {
       newErrors.email = t.emailError;
     }
 
-    // 5. Telefon Regex Kontrolü (05xxxxxxxxx formatında)
     const phoneRegex = /^05\d{9}$/;
-    const cleanPhone = formData.phone.replace(/\s+/g, ''); // Boşlukları temizleyerek kontrol et
+    const cleanPhone = formData.phone.replace(/\s+/g, '');
     if (formData.phone && !phoneRegex.test(cleanPhone)) {
       newErrors.phone = t.phoneError;
     }
 
-    // 6. Fotoğraf Kontrolü
     if (!photo && !editingId) {
       newErrors.photo = `${t.studentPhoto} ${t.required.toLowerCase()}`;
     }
@@ -359,9 +361,8 @@ export default function StudentRegistrationPage() {
 
       console.log('Success:', data);
       setSubmitSuccess(true);
-      fetchStudents(); // Refresh list
+      fetchStudents(); 
 
-      // Clear form after success
       setTimeout(() => {
         setFormData({
           studentNumber: '',
@@ -622,10 +623,14 @@ export default function StudentRegistrationPage() {
         <div className="flex-1 p-3 sm:p-6 overflow-auto">
 
           <div className="max-w-7xl mx-auto">
-            {/* Header */}
+            {/* Header - DYNAMIC TITLE */}
             <div className="mb-6">
-              <h2 className={`text-2xl font-bold ${colors.textPrimary} mb-1`}>{t.title}</h2>
-              <p className={`text-sm ${colors.textSecondary}`}>{t.subtitle}</p>
+              <h2 className={`text-2xl font-bold ${colors.textPrimary} mb-1`}>
+                {editingId ? t.editTitle : t.title}
+              </h2>
+              <p className={`text-sm ${colors.textSecondary}`}>
+                {editingId ? t.editSubtitle : t.subtitle}
+              </p>
             </div>
 
             {/* Success Message */}
@@ -872,10 +877,7 @@ export default function StudentRegistrationPage() {
                       name="phone"
                       value={formData.phone}
                       onChange={handleInputChange}
-                      className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${errors.phone
-                          ? `${isDarkMode ? 'bg-gray-700' : 'bg-red-50'} border-2 border-red-500 ${colors.textPrimary}`
-                          : `${colors.bgMain} border ${colors.border} ${colors.textPrimary} placeholder-gray-500 focus:ring-purple-500 focus:border-purple-500`
-                      }`}
+                      className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${colors.bgMain} border ${colors.border} ${colors.textPrimary} placeholder-gray-500 focus:ring-purple-500 focus:border-purple-500`}
                       placeholder={t.phonePlaceholder}
                     />
                     {errors.phone && (
@@ -888,7 +890,7 @@ export default function StudentRegistrationPage() {
 
                 </div>
 
-                {/* Submit Button */}
+                {/* Submit Button - DYNAMIC TEXT */}
                 <div className="flex gap-4 pt-4">
                   <button
                     type="submit"
@@ -896,7 +898,10 @@ export default function StudentRegistrationPage() {
                     className={`flex-1 md:flex-none md:px-8 py-3 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${colors.accentPurple
                       } hover:opacity-90`}
                   >
-                    {isSubmitting ? t.registering : t.registerStudent}
+                    {isSubmitting 
+                      ? (editingId ? t.updating : t.registering) 
+                      : (editingId ? t.updateStudent : t.registerStudent)
+                    }
                   </button>
                   <button
                     type="button"
@@ -913,6 +918,7 @@ export default function StudentRegistrationPage() {
                       setPhoto(null);
                       setPhotoPreview(null);
                       setErrors({});
+                      setEditingId(null);
                     }}
                     className={`px-6 py-3 border ${colors.border} ${colors.textSecondary} font-semibold rounded-lg transition-all hover:${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'}`}
                   >
