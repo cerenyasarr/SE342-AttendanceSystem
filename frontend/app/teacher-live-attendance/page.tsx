@@ -18,7 +18,7 @@ import {
   AlertCircle, 
   UserPlus, 
   FileText,
-  BookOpen // Yeni eklenen ikon
+  BookOpen
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -32,6 +32,13 @@ export default function TeacherLiveAttendance() {
   const [showCourseDropdown, setShowCourseDropdown] = useState(false);
   const [showManualAttendanceModal, setShowManualAttendanceModal] = useState(false);
   const [manualStudentId, setManualStudentId] = useState('');
+  
+  // YENİ: Dinamik Hoca Bilgisi State'i (Başlangıçta boş veya varsayılan)
+  const [teacherInfo, setTeacherInfo] = useState({
+    title: 'Dr.',
+    name: 'Emre',
+    surname: 'Olca'
+  });
 
   const courses = [
     { id: 'CEN101', nameKey: 'algorithms' },
@@ -54,8 +61,8 @@ export default function TeacherLiveAttendance() {
       startAttendance: 'Yoklamayı Başlat',
       stopAttendance: 'Yoklamayı Durdur',
       studentRegistration: 'Öğrenci Kayıt',
-      courseRegistration: 'Kurs Kayıt',       // Yeni Çeviri
-      courseEnrollment: 'Kursa Öğrenci Ekle',  // Yeni Çeviri
+      courseRegistration: 'Kurs Kayıt',
+      courseEnrollment: 'Kursa Öğrenci Ekle',
       attendanceReports: 'Yoklama Raporları',
       logout: 'Çıkış Yap',
       welcome: 'Hoş geldiniz,',
@@ -84,7 +91,6 @@ export default function TeacherLiveAttendance() {
       confidenceRate: 'Doğruluk Oranı',
       universityName: 'Maltepe Üniversitesi',
       systemName: 'Otomatik Yoklama Sistemi',
-      // Course names for TR
       algorithms: 'Algoritma ve Programlama I',
       dataStructures: 'Veri Yapıları',
       oop: 'Nesne Yönelimli Programlama',
@@ -98,8 +104,8 @@ export default function TeacherLiveAttendance() {
       startAttendance: 'Start Attendance',
       stopAttendance: 'Stop Attendance',
       studentRegistration: 'Student Registration',
-      courseRegistration: 'Course Registration', // Yeni Çeviri
-      courseEnrollment: 'Enroll Students',       // Yeni Çeviri
+      courseRegistration: 'Course Registration',
+      courseEnrollment: 'Enroll Students',
       attendanceReports: 'Attendance Reports',
       logout: 'Log Out',
       welcome: 'Welcome,',
@@ -128,7 +134,6 @@ export default function TeacherLiveAttendance() {
       confidenceRate: 'Accuracy Rate',
       universityName: 'Maltepe University',
       systemName: 'Automatic Attendance System',
-      // Course names for EN
       algorithms: 'Algorithms and Programming I',
       dataStructures: 'Data Structures',
       oop: 'Object Oriented Programming',
@@ -142,6 +147,25 @@ export default function TeacherLiveAttendance() {
     setMounted(true);
     const savedMode = localStorage.getItem('darkMode');
     const savedLang = localStorage.getItem('language');
+
+    // YENİ: Tarayıcı hafızasından giriş yapan hocayı oku ve state'i güncelle
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+      try {
+        const parsedUser = JSON.parse(savedUser);
+        // Sadece eğer name varsa güncelle
+        if (parsedUser.name) {
+          setTeacherInfo({
+            title: parsedUser.title || '',
+            name: parsedUser.name || '',
+            surname: parsedUser.surname || ''
+          });
+        }
+      } catch (e) {
+        console.error("User info parse error", e);
+      }
+    }
+
     if (savedMode !== null) {
       setIsDarkMode(JSON.parse(savedMode));
     } else {
@@ -173,6 +197,8 @@ export default function TeacherLiveAttendance() {
 
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
+      // Çıkış yaparken kullanıcı bilgisini temizle
+      localStorage.removeItem('currentUser');
       window.location.href = '/?page=log-in';
     }
   };
@@ -284,7 +310,10 @@ export default function TeacherLiveAttendance() {
         <div className="space-y-2 border-t border-gray-500 pt-3 mt-auto">
           <div className={`text-xs opacity-75 px-4 mb-2 transition-opacity duration-300 ${sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 h-0 overflow-hidden'}`}>
             <p>{t.welcome}</p>
-            <p className="font-semibold">Dr. Emre Olca</p>
+            {/* YENİ: Dinamik Hoca Bilgisi - Burada teacherInfo kullanıyoruz */}
+            <p className="font-semibold truncate">
+              {teacherInfo.title} {teacherInfo.name} {teacherInfo.surname}
+            </p>
             <p className="text-xs opacity-60">{t.teacher}</p>
           </div>
           <button 
@@ -377,7 +406,10 @@ export default function TeacherLiveAttendance() {
         <div className="space-y-2 border-t border-gray-500 pt-3 mt-auto">
           <div className="text-xs opacity-75 px-4 mb-2">
             <p>{t.welcome}</p>
-            <p className="font-semibold">Dr. Emre Olca</p>
+            {/* YENİ: Dinamik Hoca Bilgisi - Burada teacherInfo kullanıyoruz */}
+            <p className="font-semibold truncate">
+              {teacherInfo.title} {teacherInfo.name} {teacherInfo.surname}
+            </p>
             <p className="text-xs opacity-60">{t.teacher}</p>
           </div>
           <button 

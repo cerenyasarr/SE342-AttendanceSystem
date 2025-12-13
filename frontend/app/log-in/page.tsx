@@ -105,20 +105,62 @@ export default function LoginPage() {
     localStorage.setItem('language', newLang);
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Demo logic remains the same
+    // 1. Demo Hesabı Mantığı (Fallback olarak kalsın)
     if (username === 'emreolca' && password === 'emreolca') {
+      const demoUser = { 
+        id: 999,
+        name: 'Emre', 
+        surname: 'Olca', 
+        title: 'Dr.', 
+        role: 'instructor' 
+      };
+      localStorage.setItem('currentUser', JSON.stringify(demoUser));
       window.location.href = '/?page=teacher-live-attendance';
       return;
     }
+
     if (username === '2024001') {
-      window.location.href = '/?page=student-reports';
-      return;
+        const demoStudent = {
+            id: 888,
+            name: 'Öğrenci',
+            role: 'student'
+        };
+        localStorage.setItem('currentUser', JSON.stringify(demoStudent));
+        window.location.href = '/?page=student-reports';
+        return;
     }
-    // Default fallback
-    window.location.href = '/?page=teacher-live-attendance';
+
+    // 2. Gerçek Backend Girişi
+    try {
+      const response = await fetch('http://localhost:5001/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Backend'den gelen kullanıcı bilgisini tarayıcıya kaydet
+        localStorage.setItem('currentUser', JSON.stringify(data));
+        
+        // Role göre yönlendirme
+        if (data.role === 'instructor') {
+          window.location.href = '/?page=teacher-live-attendance';
+        } else {
+          window.location.href = '/?page=student-reports';
+        }
+      } else {
+        const err = await response.json();
+        alert(language === 'en' ? (err.error || "Invalid credentials") : (err.error || "Hatalı giriş"));
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      alert(language === 'en' ? "Connection error" : "Bağlantı hatası");
+    }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -165,15 +207,9 @@ export default function LoginPage() {
     if (userType === 'instructor') {
       setUsername('emreolca');
       setPassword('emreolca');
-      setTimeout(() => {
-        window.location.href = '/?page=teacher-live-attendance';
-      }, 100);
     } else if (userType === 'student') {
       setUsername('2024001');
       setPassword('any');
-      setTimeout(() => {
-        window.location.href = '/?page=student-reports';
-      }, 100);
     }
   };
 
@@ -329,7 +365,6 @@ export default function LoginPage() {
                     <label className={`block text-xs font-semibold mb-1.5 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                       {language === 'en' ? 'Department' : 'Bölüm'}
                     </label>
-                    {/* DEĞİŞİKLİK BURADA: Input yerine Select kullanıldı */}
                     <select
                       required
                       value={regDepartment}
@@ -351,7 +386,7 @@ export default function LoginPage() {
               </>
             )}
 
-            {/* Common Fields (Username/Password logic differs slightly but using separate states for clarity) */}
+            {/* Common Fields */}
             <div>
               <label className={`block text-xs font-semibold mb-1.5 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                 {t.username}
@@ -420,7 +455,6 @@ export default function LoginPage() {
             <button
               onClick={() => {
                 setIsLoginMode(!isLoginMode);
-                // Formları temizle
                 setUsername(''); setPassword('');
                 setRegName(''); setRegSurname(''); setRegEmail(''); setRegUsername(''); setRegPassword(''); setRegConfirmPassword('');
               }}
@@ -431,7 +465,7 @@ export default function LoginPage() {
             </button>
           </div>
 
-          {/* Demo Accounts (Only show in Login Mode) */}
+          {/* Demo Accounts */}
           {isLoginMode && (
             <div className={`mt-6 rounded-lg p-3 sm:p-4 border transition-colors ${isDarkMode
               ? 'bg-gray-700/50 border-purple-600/30'
