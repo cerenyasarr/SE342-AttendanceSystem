@@ -178,6 +178,77 @@ def create_student():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+# ==========================================
+# UPDATE STUDENT (PUT) - YENİ EKLENEN KISIM
+# ==========================================
+@api.route('/students/<string:id>', methods=['PUT'])
+def update_student(id):
+    try:
+        student = Student.query.get_or_404(id)
+        user = student.user
+        
+        # Veri Form-Data veya JSON olabilir
+        data = request.form if request.form else request.json
+        if not data:
+             return jsonify({'error': 'No data provided'}), 400
+
+        # --- User Tablosu Güncellemeleri (Ad, Soyad, Fotoğraf) ---
+        if 'name' in data: 
+            user.first_name = data['name']
+        if 'surname' in data: 
+            user.last_name = data['surname']
+        
+        # Fotoğraf yüklenmişse güncelle
+        if request.files and 'photo' in request.files:
+            file = request.files['photo']
+            if file and allowed_file(file.filename):
+                filename = secure_filename(f"{student.student_number}_{file.filename}")
+                if not os.path.exists(current_app.config['UPLOAD_FOLDER']):
+                    os.makedirs(current_app.config['UPLOAD_FOLDER'])
+                file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+                file.save(file_path)
+                user.image = f"uploads/{filename}"
+
+        # --- Student Tablosu Güncellemeleri ---
+        # Öğrenci Numarası değişiyorsa, benzersizlik kontrolü yap
+        if 'studentNumber' in data:
+            new_number = data['studentNumber']
+            if new_number != student.student_number:
+                if Student.query.filter_by(student_number=new_number).first():
+                    return jsonify({'error': 'Student number already exists'}), 409
+                student.student_number = new_number
+                
+        # Email değişiyorsa, benzersizlik kontrolü yap
+        if 'email' in data:
+            new_email = data['email']
+            if new_email != student.email:
+                if Student.query.filter_by(email=new_email).first():
+                    return jsonify({'error': 'Email already exists'}), 409
+                student.email = new_email
+
+        if 'phone' in data: 
+            student.phone_number = data['phone']
+        if 'class' in data: 
+            student.class_level = data['class']
+        
+        # Bölüm kontrolü
+        if 'department' in data:
+            dept_name = data['department']
+            dept = Department.query.filter_by(name=dept_name).first()
+            if not dept:
+                # Bölüm yoksa otomatik oluştur
+                dept = Department(name=dept_name)
+                db.session.add(dept)
+                db.session.commit()
+            student.department_id = dept.id
+
+        db.session.commit()
+        return jsonify({'message': 'Student updated successfully'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
 @api.route('/students/<string:id>', methods=['DELETE'])
 def delete_student(id):
     try:
@@ -500,3 +571,46 @@ def get_session_attendance(session_id):
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+# ==========================================
+# AUTHENTICATION (LOGIN)
+# ==========================================
+@api.route('/login', methods=['POST'])
+def login():
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+
+    if not username or not password:
+        return jsonify({'error': 'Username and password required'}), 400
+
+    # 1. Instructor Check
+    instructor = Instructor.query.filter_by(username=username).first()
+    if instructor:
+        user = instructor.user
+        # Not: Gerçek uygulamada şifre hash'lenmeli!
+        if user and user.password == password:
+            return jsonify({
+                'role': 'instructor',
+                'id': instructor.id,
+                'name': user.first_name,
+                'surname': user.last_name,
+                'title': instructor.title,
+                'department': instructor.department.name if instructor.department else ""
+            }), 200
+
+    # 2. Student Check
+    student = Student.query.filter_by(student_number=username).first()
+    if student:
+        user = student.user
+        # Basit şifre kontrolü (kullanıcı modelindeki şifre alanı ile)
+        if user and user.password == password:
+             return jsonify({
+                'role': 'student',
+                'id': student.id,
+                'name': user.first_name,
+                'surname': user.last_name,
+                'student_number': student.student_number
+            }), 200
+
+    return jsonify({'error': 'Invalid credentials'}), 401
