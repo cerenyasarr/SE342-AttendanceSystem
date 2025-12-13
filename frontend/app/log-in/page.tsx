@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Globe, Moon, Sun, UserPlus, LogIn } from 'lucide-react';
 import Image from 'next/image';
 
-// Translations - Yeni kayıt alanları eklendi
+// Translations
 const translations = {
   tr: {
     title: "Maltepe Üniversitesi",
@@ -329,17 +329,23 @@ export default function LoginPage() {
                     <label className={`block text-xs font-semibold mb-1.5 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                       {language === 'en' ? 'Department' : 'Bölüm'}
                     </label>
-                    <input
-                      type="text"
+                    {/* DEĞİŞİKLİK BURADA: Input yerine Select kullanıldı */}
+                    <select
                       required
                       value={regDepartment}
                       onChange={(e) => setRegDepartment(e.target.value)}
-                      placeholder={language === 'en' ? 'Engineering' : 'Mühendislik'}
                       className={`w-full text-sm rounded-lg p-2.5 transition-all ${isDarkMode
                         ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-purple-500'
                         : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-purple-400'
                         }`}
-                    />
+                    >
+                      <option value="">{language === 'en' ? 'Select Department' : 'Bölüm Seçin'}</option>
+                      <option value="CSE">Computer Science Engineering</option>
+                      <option value="EE">Electrical Engineering</option>
+                      <option value="ME">Mechanical Engineering</option>
+                      <option value="CE">Civil Engineering</option>
+                      <option value="IE">Industrial Engineering</option>
+                    </select>
                   </div>
                 </div>
               </>
