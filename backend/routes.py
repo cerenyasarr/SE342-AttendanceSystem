@@ -254,11 +254,25 @@ def delete_student(id):
     try:
         student = Student.query.get_or_404(id)
         user = student.user
+        
+        # 1. Önce öğrencinin aldığı yoklamaları sil
+        StudentAttendance.query.filter_by(student_id=student.id).delete()
+        
+        # 2. Öğrencinin ders kayıtlarını (Enrollment) sil
+        Enrollment.query.filter_by(student_id=student.id).delete()
+        
+        # 3. Varsa diğer bağlı verileri sil (Projen genişlerse buraya ekleyebilirsin)
+        
+        # 4. Şimdi öğrenciyi güvenle silebiliriz
         db.session.delete(student)
+        
+        # 5. Son olarak Kullanıcı (User) hesabını sil
         if user:
             db.session.delete(user)
+            
         db.session.commit()
-        return jsonify({'message': 'Student deleted'}), 200
+        return jsonify({'message': 'Student and all related data deleted'}), 200
+        
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
