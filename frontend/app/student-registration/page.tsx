@@ -8,14 +8,12 @@ import {
   Sun,
   LogOut,
   Menu,
-  X,
   Upload,
   Camera,
   CheckCircle2,
   XCircle,
   FileText,
   Video,
-  ArrowRight,
   BarChart3,
   BookOpen,
   Users
@@ -52,11 +50,12 @@ const translations = {
     namePlaceholder: "Ad",
     surnamePlaceholder: "Soyad",
     emailPlaceholder: "ogrenci@ornek.com",
-    phonePlaceholder: "+90 555 123 4567",
+    phonePlaceholder: "05xxxxxxxxx",
     imageSizeError: "Resim boyutu 5MB'dan küçük olmalıdır",
     imageTypeError: "Lütfen bir resim dosyası seçin",
     studentNumberError: "Öğrenci numarası sadece rakam içermelidir",
     emailError: "Lütfen geçerli bir e-posta adresi girin",
+    phoneError: "Telefon numarası '05xxxxxxxxx' formatında ve 11 haneli olmalıdır.",
     quickAccess: "Hızlı Erişim",
     studentRegistration: "Öğrenci Kayıt",
     courseRegistration: "Kurs Kayıt",
@@ -94,11 +93,12 @@ const translations = {
     namePlaceholder: "First name",
     surnamePlaceholder: "Last name",
     emailPlaceholder: "student@example.com",
-    phonePlaceholder: "+90 555 123 4567",
+    phonePlaceholder: "05xxxxxxxxx",
     imageSizeError: "Image size must be less than 5MB",
     imageTypeError: "Please select an image file",
     studentNumberError: "Student number must contain only digits",
     emailError: "Please enter a valid email address",
+    phoneError: "Phone number must be in '05xxxxxxxxx' format and 11 digits.",
     quickAccess: "Quick Access",
     studentRegistration: "Student Registration",
     courseRegistration: "Course Registration",
@@ -159,18 +159,14 @@ export default function StudentRegistrationPage() {
     }
   };
 
- // Mevcut useEffect yerine bunu kullanın:
   useEffect(() => {
     setMounted(true);
 
-    // 1. Önce localStorage'da kayıtlı bir tercih var mı bak
     const savedMode = localStorage.getItem('darkMode');
     
     if (savedMode !== null) {
-      // Kayıt varsa onu uygula
       setIsDarkMode(JSON.parse(savedMode));
     } else {
-      // 2. Kayıt yoksa, kullanıcının bilgisayarının sistem temasını kontrol et
       const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       setIsDarkMode(systemPrefersDark);
     }
@@ -274,12 +270,14 @@ export default function StudentRegistrationPage() {
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
+    // 1. Öğrenci No Kontrolü
     if (!formData.studentNumber.trim()) {
       newErrors.studentNumber = `${t.studentNumber} ${t.required.toLowerCase()}`;
     } else if (!/^\d+$/.test(formData.studentNumber)) {
       newErrors.studentNumber = t.studentNumberError;
     }
 
+    // 2. İsim / Soyisim Kontrolü
     if (!formData.name.trim()) {
       newErrors.name = `${t.name} ${t.required.toLowerCase()}`;
     }
@@ -288,6 +286,7 @@ export default function StudentRegistrationPage() {
       newErrors.surname = `${t.surname} ${t.required.toLowerCase()}`;
     }
 
+    // 3. Bölüm / Sınıf Kontrolü
     if (!formData.department) {
       newErrors.department = `${t.department} ${t.required.toLowerCase()}`;
     }
@@ -296,10 +295,20 @@ export default function StudentRegistrationPage() {
       newErrors.class = `${t.class} ${t.required.toLowerCase()}`;
     }
 
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    // 4. Email Regex Kontrolü
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (formData.email && !emailRegex.test(formData.email)) {
       newErrors.email = t.emailError;
     }
 
+    // 5. Telefon Regex Kontrolü (05xxxxxxxxx formatında)
+    const phoneRegex = /^05\d{9}$/;
+    const cleanPhone = formData.phone.replace(/\s+/g, ''); // Boşlukları temizleyerek kontrol et
+    if (formData.phone && !phoneRegex.test(cleanPhone)) {
+      newErrors.phone = t.phoneError;
+    }
+
+    // 6. Fotoğraf Kontrolü
     if (!photo && !editingId) {
       newErrors.photo = `${t.studentPhoto} ${t.required.toLowerCase()}`;
     }
@@ -863,9 +872,18 @@ export default function StudentRegistrationPage() {
                       name="phone"
                       value={formData.phone}
                       onChange={handleInputChange}
-                      className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${colors.bgMain} border ${colors.border} ${colors.textPrimary} placeholder-gray-500 focus:ring-purple-500 focus:border-purple-500`}
+                      className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${errors.phone
+                          ? `${isDarkMode ? 'bg-gray-700' : 'bg-red-50'} border-2 border-red-500 ${colors.textPrimary}`
+                          : `${colors.bgMain} border ${colors.border} ${colors.textPrimary} placeholder-gray-500 focus:ring-purple-500 focus:border-purple-500`
+                      }`}
                       placeholder={t.phonePlaceholder}
                     />
+                    {errors.phone && (
+                        <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                          <XCircle size={12} />
+                          {errors.phone}
+                        </p>
+                    )}
                   </div>
 
                 </div>
