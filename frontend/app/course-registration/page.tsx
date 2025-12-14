@@ -8,14 +8,14 @@ import {
   Sun,
   LogOut,
   Menu,
-  Upload,
   CheckCircle2,
   XCircle,
   UserPlus,
   Video,
   BarChart3,
   Users,
-  ArrowRight
+  Plus, // YENİ: Artı ikonu eklendi
+  X     // YENİ: Kapatma ikonu
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -29,6 +29,9 @@ const translations = {
     courseDescription: "Kurs Açıklaması",
     semester: "Dönem",
     academicYear: "Akademik Yıl",
+    credits: "Kredi",
+    instructor: "Öğretmen",
+    classroom: "Sınıf / Derslik", // GÜNCELLENDİ
     selectSemester: "Dönem seçin",
     selectAcademicYear: "Akademik yıl seçin",
     registerCourse: "Kursu Kaydet",
@@ -36,7 +39,6 @@ const translations = {
     clearForm: "Formu Temizle",
     success: "Kurs başarıyla kaydedildi!",
     welcome: "Hoş geldiniz,",
-    instructor: "Öğretmen",
     teacherAccount: "Öğretmen Hesabı",
     logOut: "Çıkış Yap",
     required: "Zorunlu",
@@ -44,6 +46,7 @@ const translations = {
     courseNamePlaceholder: "Yazılım Mühendisliği",
     courseDescriptionPlaceholder: "Kurs açıklaması...",
     courseCodeError: "Kurs kodu sadece harf ve rakam içermelidir",
+    creditsError: "Kredi pozitif bir sayı olmalıdır",
     quickAccess: "Hızlı Erişim",
     studentRegistration: "Öğrenci Kayıt",
     courseRegistration: "Kurs Kayıt",
@@ -52,6 +55,13 @@ const translations = {
     liveAttendance: "Canlı Yoklama",
     universityName: "Maltepe Üniversitesi",
     systemName: "Otomatik Yoklama Sistemi",
+    // YENİ SINIF EKLEME ÇEVİRİLERİ
+    addClassroom: "Yeni Sınıf Ekle",
+    classroomCode: "Sınıf Kodu",
+    capacity: "Kapasite",
+    saveClassroom: "Sınıfı Kaydet",
+    classroomSuccess: "Sınıf eklendi!",
+    classroomCodePlaceholder: "örn: B-204",
   },
   EN: {
     title: "Course Registration",
@@ -61,6 +71,9 @@ const translations = {
     courseDescription: "Course Description",
     semester: "Semester",
     academicYear: "Academic Year",
+    credits: "Credits",
+    instructor: "Instructor",
+    classroom: "Classroom", // GÜNCELLENDİ
     selectSemester: "Select semester",
     selectAcademicYear: "Select academic year",
     registerCourse: "Register Course",
@@ -68,7 +81,6 @@ const translations = {
     clearForm: "Clear Form",
     success: "Course registered successfully!",
     welcome: "Welcome,",
-    instructor: "Instructor",
     teacherAccount: "Teacher Account",
     logOut: "Log Out",
     required: "Required",
@@ -76,6 +88,7 @@ const translations = {
     courseNamePlaceholder: "Software Engineering",
     courseDescriptionPlaceholder: "Course description...",
     courseCodeError: "Course code must contain only letters and numbers",
+    creditsError: "Credits must be a positive number",
     quickAccess: "Quick Access",
     studentRegistration: "Student Registration",
     courseRegistration: "Course Registration",
@@ -84,6 +97,13 @@ const translations = {
     liveAttendance: "Live Attendance",
     universityName: "Maltepe University",
     systemName: "Automatic Attendance System",
+    // NEW CLASSROOM TRANSLATIONS
+    addClassroom: "Add New Classroom",
+    classroomCode: "Classroom Code",
+    capacity: "Capacity",
+    saveClassroom: "Save Classroom",
+    classroomSuccess: "Classroom added!",
+    classroomCodePlaceholder: "e.g., B-204",
   }
 };
 
@@ -97,6 +117,7 @@ export default function CourseRegistrationPage() {
   const [instructors, setInstructors] = useState<any[]>([]);
   const [classrooms, setClassrooms] = useState<any[]>([]);
 
+  // States for Course Form
   const [formData, setFormData] = useState({
     courseCode: '',
     courseName: '',
@@ -111,6 +132,11 @@ export default function CourseRegistrationPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+
+  // States for New Classroom Modal (YENİ)
+  const [showClassroomModal, setShowClassroomModal] = useState(false);
+  const [newClassroom, setNewClassroom] = useState({ code: '', capacity: '' });
+  const [classroomStatus, setClassroomStatus] = useState<string | null>(null);
 
   const t = translations[language];
 
@@ -128,7 +154,6 @@ export default function CourseRegistrationPage() {
       setLanguage(lang);
     }
 
-    // Fetch Instructors and Classrooms
     fetchInstructors();
     fetchClassrooms();
   }, []);
@@ -187,6 +212,44 @@ export default function CourseRegistrationPage() {
     }
   };
 
+  // --- YENİ SINIF EKLEME FONKSİYONU ---
+  const handleCreateClassroom = async () => {
+    if (!newClassroom.code || !newClassroom.capacity) {
+      setClassroomStatus("error"); 
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:5001/api/classrooms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          classroom_code: newClassroom.code,
+          capacity: parseInt(newClassroom.capacity)
+        })
+      });
+
+      if (response.ok) {
+        const createdClassroom = await response.json();
+        // Listeyi yenile
+        fetchClassrooms();
+        // Yeni ekleneni formda seçili yap
+        setFormData(prev => ({ ...prev, classroom_id: createdClassroom.id }));
+        // Modalı kapat ve temizle
+        setClassroomStatus("success");
+        setTimeout(() => {
+          setShowClassroomModal(false);
+          setNewClassroom({ code: '', capacity: '' });
+          setClassroomStatus(null);
+        }, 1000);
+      } else {
+        alert("Failed to add classroom");
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
@@ -201,7 +264,13 @@ export default function CourseRegistrationPage() {
     }
 
     if (!formData.credits) {
-      newErrors.credits = "Credits required";
+      newErrors.credits = `${t.credits} ${t.required.toLowerCase()}`;
+    } else if (parseInt(formData.credits) < 1) {
+      newErrors.credits = t.creditsError;
+    }
+
+    if (!formData.instructor_id) {
+      newErrors.instructor_id = `${t.instructor} ${t.required.toLowerCase()}`;
     }
 
     if (!formData.semester) {
@@ -237,18 +306,39 @@ export default function CourseRegistrationPage() {
           course_code: formData.courseCode,
           course_name: formData.courseName,
           credits: parseInt(formData.credits),
-          classroom_id: formData.classroom_id || null, // Optional
-          instructor_id: formData.instructor_id || null, // Optional
-          // semester/academicYear not in Course model according to routes.py, 
-          // but might be useful. The backend implementation only takes code, name, credits.
-          // Wait, the Enrollment model has year/term. The Course model doesn't seem to store semester/year directly based on previous files.
-          // But I'll send what is supported.
+          classroom_id: formData.classroom_id || null, 
+          instructor_id: formData.instructor_id, 
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error || 'Failed to register course');
+        let errorMessage = data.error || 'Failed to register course';
+        
+        if (errorMessage.includes("Course code already exists")) {
+            errorMessage = language === 'TR' 
+                ? "Bu kurs kodu zaten kayıtlı!" 
+                : "Course code already exists!";
+        } else if (errorMessage.includes("Course name already exists")) {
+            errorMessage = language === 'TR' 
+                ? "Bu kurs adı zaten kullanılıyor!" 
+                : "Course name already exists!";
+        } else if (errorMessage.includes("Missing required fields")) {
+            errorMessage = language === 'TR'
+                ? "Lütfen zorunlu alanları doldurun."
+                : "Please fill in all required fields.";
+        } else if (errorMessage.includes("positive integer")) {
+            errorMessage = language === 'TR'
+                ? "Kredi pozitif bir sayı olmalıdır."
+                : "Credits must be a positive number.";
+        } else {
+            errorMessage = language === 'TR' 
+                ? "Bir hata oluştu: " + errorMessage 
+                : "An error occurred: " + errorMessage;
+        }
+        
+        throw new Error(errorMessage);
       }
 
       console.log('Course registered:', formData);
@@ -289,7 +379,7 @@ export default function CourseRegistrationPage() {
 
   if (!mounted) return null;
 
-  // Generate academic years (current year - 2 to current year + 2)
+  // Generate academic years
   const currentYear = new Date().getFullYear();
   const academicYears = [];
   for (let i = -2; i <= 2; i++) {
@@ -390,7 +480,7 @@ export default function CourseRegistrationPage() {
           <div className={`text-xs opacity-75 px-4 mb-2 transition-opacity duration-300 ${sidebarOpen ? 'opacity-100 w-full' : 'opacity-0 h-0 overflow-hidden'}`}>
             <p>{t.welcome}</p>
             <p className="font-semibold">Dr. Emre Olca</p>
-            <p className="text-xs opacity-60">{t.instructor}</p>
+            <p className="text-xs opacity-60">{t.teacherAccount}</p>
           </div>
           <button
             onClick={handleLogout}
@@ -467,7 +557,7 @@ export default function CourseRegistrationPage() {
           <div className="text-xs opacity-75 px-4 mb-2">
             <p>{t.welcome}</p>
             <p className="font-semibold">Dr. Emre Olca</p>
-            <p className="text-xs opacity-60">{t.instructor}</p>
+            <p className="text-xs opacity-60">{t.teacherAccount}</p>
           </div>
           <button
             onClick={handleLogout}
@@ -603,11 +693,12 @@ export default function CourseRegistrationPage() {
                   {/* Credits */}
                   <div>
                     <label className={`block text-sm font-semibold mb-2 ${colors.textPrimary}`}>
-                      Credits <span className="text-red-400">*</span>
+                      {t.credits} <span className="text-red-400">*</span>
                     </label>
                     <input
                       type="number"
                       name="credits"
+                      min="1" // ENGELLENDİ: HTML5 seviyesinde negatif giriş
                       value={formData.credits}
                       onChange={handleInputChange}
                       className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${errors.credits
@@ -628,14 +719,17 @@ export default function CourseRegistrationPage() {
                   {/* Instructor */}
                   <div>
                     <label className={`block text-sm font-semibold mb-2 ${colors.textPrimary}`}>
-                      Instructor
+                      {t.instructor} <span className="text-red-400">*</span>
                     </label>
                     <select
                       name="instructor_id"
                       value={formData.instructor_id}
                       onChange={handleInputChange}
-                      className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${`${colors.bgMain} border ${colors.border} ${colors.textPrimary} focus:ring-purple-500 focus:border-purple-500`
-                        }`}
+                      required
+                      className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${errors.instructor_id 
+                        ? `${isDarkMode ? 'bg-gray-700' : 'bg-red-50'} border-2 border-red-500 ${colors.textPrimary}`
+                        : `${colors.bgMain} border ${colors.border} ${colors.textPrimary} focus:ring-purple-500 focus:border-purple-500`
+                      }`}
                     >
                       <option value="">Select Instructor</option>
                       {instructors.map((inst) => (
@@ -644,27 +738,44 @@ export default function CourseRegistrationPage() {
                         </option>
                       ))}
                     </select>
+                    {errors.instructor_id && (
+                      <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                        <XCircle size={12} />
+                        {errors.instructor_id}
+                      </p>
+                    )}
                   </div>
 
-                  {/* Classroom */}
+                  {/* Classroom with Quick Add Button */}
                   <div>
                     <label className={`block text-sm font-semibold mb-2 ${colors.textPrimary}`}>
-                      Classroom
+                      {t.classroom}
                     </label>
-                    <select
-                      name="classroom_id"
-                      value={formData.classroom_id}
-                      onChange={handleInputChange}
-                      className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${`${colors.bgMain} border ${colors.border} ${colors.textPrimary} focus:ring-purple-500 focus:border-purple-500`
-                        }`}
-                    >
-                      <option value="">Select Classroom</option>
-                      {classrooms.map((room) => (
-                        <option key={room.id} value={room.id}>
-                          {room.code} (Cap: {room.capacity})
-                        </option>
-                      ))}
-                    </select>
+                    <div className="flex gap-2">
+                      <select
+                        name="classroom_id"
+                        value={formData.classroom_id}
+                        onChange={handleInputChange}
+                        className={`w-full rounded-lg focus:ring-2 focus:outline-none block p-3 transition-all ${`${colors.bgMain} border ${colors.border} ${colors.textPrimary} focus:ring-purple-500 focus:border-purple-500`
+                          }`}
+                      >
+                        <option value="">Select Classroom</option>
+                        {classrooms.map((room) => (
+                          <option key={room.id} value={room.id}>
+                            {room.code} (Cap: {room.capacity})
+                          </option>
+                        ))}
+                      </select>
+                      {/* YENİ SINIF EKLE BUTONU */}
+                      <button 
+                        type="button" 
+                        onClick={() => setShowClassroomModal(true)}
+                        className={`p-3 rounded-lg border ${colors.border} hover:bg-gray-100 dark:hover:bg-gray-700 transition flex items-center justify-center min-w-[3rem]`}
+                        title={t.addClassroom}
+                      >
+                        <Plus size={20} className={colors.textPrimary} />
+                      </button>
+                    </div>
                   </div>
 
                   {/* Semester */}
@@ -726,7 +837,6 @@ export default function CourseRegistrationPage() {
                 </div>
 
                 {/* Course Description */}
-                {/* (Assuming descriptions aren't actually stored in current backend model, but keeping UI) */}
                 <div>
                   <label className={`block text-sm font-semibold mb-2 ${colors.textPrimary}`}>
                     {t.courseDescription}
@@ -777,8 +887,66 @@ export default function CourseRegistrationPage() {
           </div>
         </div>
       </div>
+
+      {/* --- ADD CLASSROOM MODAL --- */}
+      {showClassroomModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className={`${colors.bgCard} rounded-xl shadow-2xl max-w-md w-full p-6 relative border ${colors.border}`}>
+            <button 
+              onClick={() => setShowClassroomModal(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition"
+            >
+              <X size={24} />
+            </button>
+            
+            <h3 className={`text-xl font-bold mb-4 ${colors.textPrimary}`}>{t.addClassroom}</h3>
+            
+            {classroomStatus === 'success' ? (
+              <div className="text-green-500 flex flex-col items-center justify-center py-6 animate-fade-in">
+                <CheckCircle2 size={48} className="mb-2" />
+                <p className="font-semibold">{t.classroomSuccess}</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${colors.textPrimary}`}>{t.classroomCode}</label>
+                  <input 
+                    type="text" 
+                    value={newClassroom.code}
+                    onChange={(e) => setNewClassroom({...newClassroom, code: e.target.value})}
+                    className={`w-full p-3 rounded-lg border focus:ring-2 focus:outline-none transition-all ${colors.border} ${colors.bgMain} ${colors.textPrimary} focus:ring-purple-500 focus:border-purple-500`}
+                    placeholder={t.classroomCodePlaceholder}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${colors.textPrimary}`}>{t.capacity}</label>
+                  <input 
+                    type="number" 
+                    value={newClassroom.capacity}
+                    onChange={(e) => setNewClassroom({...newClassroom, capacity: e.target.value})}
+                    className={`w-full p-3 rounded-lg border focus:ring-2 focus:outline-none transition-all ${colors.border} ${colors.bgMain} ${colors.textPrimary} focus:ring-purple-500 focus:border-purple-500`}
+                    placeholder="50"
+                  />
+                </div>
+                {classroomStatus === 'error' && (
+                  <div className="p-3 bg-red-100 text-red-600 rounded-lg text-sm flex items-center gap-2">
+                    <XCircle size={16} />
+                    <span>Please fill in all fields correctly.</span>
+                  </div>
+                )}
+                
+                <button 
+                  onClick={handleCreateClassroom}
+                  className={`w-full py-3 rounded-lg font-bold text-white shadow-md hover:shadow-lg transition-all ${colors.accentPurple} hover:opacity-90`}
+                >
+                  {t.saveClassroom}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
-
-
