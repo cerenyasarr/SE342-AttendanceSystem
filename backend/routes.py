@@ -179,7 +179,7 @@ def create_student():
         return jsonify({'error': str(e)}), 500
 
 # ==========================================
-# UPDATE STUDENT (PUT) - YENİ EKLENEN KISIM
+# UPDATE STUDENT (PUT)
 # ==========================================
 @api.route('/students/<string:id>', methods=['PUT'])
 def update_student(id):
@@ -192,13 +192,12 @@ def update_student(id):
         if not data:
              return jsonify({'error': 'No data provided'}), 400
 
-        # --- User Tablosu Güncellemeleri (Ad, Soyad, Fotoğraf) ---
+        # --- User Tablosu Güncellemeleri ---
         if 'name' in data: 
             user.first_name = data['name']
         if 'surname' in data: 
             user.last_name = data['surname']
         
-        # Fotoğraf yüklenmişse güncelle
         if request.files and 'photo' in request.files:
             file = request.files['photo']
             if file and allowed_file(file.filename):
@@ -210,7 +209,6 @@ def update_student(id):
                 user.image = f"uploads/{filename}"
 
         # --- Student Tablosu Güncellemeleri ---
-        # Öğrenci Numarası değişiyorsa, benzersizlik kontrolü yap
         if 'studentNumber' in data:
             new_number = data['studentNumber']
             if new_number != student.student_number:
@@ -218,7 +216,6 @@ def update_student(id):
                     return jsonify({'error': 'Student number already exists'}), 409
                 student.student_number = new_number
                 
-        # Email değişiyorsa, benzersizlik kontrolü yap
         if 'email' in data:
             new_email = data['email']
             if new_email != student.email:
@@ -231,12 +228,10 @@ def update_student(id):
         if 'class' in data: 
             student.class_level = data['class']
         
-        # Bölüm kontrolü
         if 'department' in data:
             dept_name = data['department']
             dept = Department.query.filter_by(name=dept_name).first()
             if not dept:
-                # Bölüm yoksa otomatik oluştur
                 dept = Department(name=dept_name)
                 db.session.add(dept)
                 db.session.commit()
@@ -261,12 +256,10 @@ def delete_student(id):
         # 2. Öğrencinin ders kayıtlarını (Enrollment) sil
         Enrollment.query.filter_by(student_id=student.id).delete()
         
-        # 3. Varsa diğer bağlı verileri sil (Projen genişlerse buraya ekleyebilirsin)
-        
-        # 4. Şimdi öğrenciyi güvenle silebiliriz
+        # 3. Şimdi öğrenciyi güvenle silebiliriz
         db.session.delete(student)
         
-        # 5. Son olarak Kullanıcı (User) hesabını sil
+        # 4. Son olarak Kullanıcı (User) hesabını sil
         if user:
             db.session.delete(user)
             
@@ -310,8 +303,15 @@ def create_instructor():
         if not all([first_name, last_name, username, password, email, department_name]):
              return jsonify({'error': 'Missing required fields'}), 400
              
-        if Instructor.query.filter((Instructor.username == username) | (Instructor.email == email)).first():
-            return jsonify({'error': 'Username or Email already exists'}), 409
+        # --- DEĞİŞİKLİK BURADA: Kontrolleri ayırdık ---
+        
+        # 1. Kullanıcı Adı Kontrolü
+        if Instructor.query.filter_by(username=username).first():
+            return jsonify({'error': 'Username already exists'}), 409
+            
+        # 2. Email Kontrolü
+        if Instructor.query.filter_by(email=email).first():
+            return jsonify({'error': 'Email already exists'}), 409
 
         department = Department.query.filter_by(name=department_name).first()
         if not department:
@@ -364,6 +364,7 @@ def get_courses():
         'classroom': c.classroom.classroom_code if c.classroom else None
     } for c in courses])
 
+# --- GÜNCELLENEN KISIM: Kredi Kontrolü ve Unique Constraint ---
 @api.route('/courses', methods=['POST'])
 def create_course():
     try:
@@ -374,8 +375,21 @@ def create_course():
         classroom_id = data.get('classroom_id')
         instructor_id = data.get('instructor_id')
         
+        # 1. Zorunlu Alan Kontrolü
         if not all([code, name, credits]):
             return jsonify({'error': 'Missing required fields'}), 400
+            
+        # 2. Kredi Pozitiflik Kontrolü
+        if int(credits) < 1:
+            return jsonify({'error': 'Credits must be a positive integer'}), 400
+
+        # 3. Kurs Kodu Benzersizlik Kontrolü (Unique Code)
+        if Course.query.filter_by(course_code=code).first():
+            return jsonify({'error': 'Course code already exists'}), 409
+
+        # 4. Kurs Adı Benzersizlik Kontrolü (Unique Name)
+        if Course.query.filter_by(course_name=name).first():
+            return jsonify({'error': 'Course name already exists'}), 409
             
         course = Course(
             course_code=code,
@@ -387,6 +401,9 @@ def create_course():
         db.session.add(course)
         db.session.commit()
         return jsonify({'message': 'Course created', 'id': course.id}), 201
+        
+    except ValueError:
+        return jsonify({'error': 'Invalid credit value'}), 400
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
