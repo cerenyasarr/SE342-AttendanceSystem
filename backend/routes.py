@@ -303,8 +303,6 @@ def create_instructor():
         if not all([first_name, last_name, username, password, email, department_name]):
              return jsonify({'error': 'Missing required fields'}), 400
              
-        # --- DEĞİŞİKLİK BURADA: Kontrolleri ayırdık ---
-        
         # 1. Kullanıcı Adı Kontrolü
         if Instructor.query.filter_by(username=username).first():
             return jsonify({'error': 'Username already exists'}), 409
@@ -350,21 +348,23 @@ def create_instructor():
         return jsonify({'error': str(e)}), 500
 
 # ==========================================
-# COURSES
+# COURSES (GÜNCELLENDİ)
 # ==========================================
 @api.route('/courses', methods=['GET'])
 def get_courses():
     courses = Course.query.all()
+    # Her bir kurs için kayıtlı öğrenci sayısını da ekledik
     return jsonify([{
         'id': c.id, 
         'code': c.course_code, 
         'name': c.course_name,
         'credits': c.credits,
         'instructor': f"{c.instructor.user.first_name} {c.instructor.user.last_name}" if c.instructor and c.instructor.user else None,
-        'classroom': c.classroom.classroom_code if c.classroom else None
+        'classroom': c.classroom.classroom_code if c.classroom else None,
+        'capacity': c.classroom.capacity if c.classroom else 0, # Kapasite bilgisi
+        'enrolled_count': Enrollment.query.filter_by(course_id=c.id).count() # Mevcut kayıt sayısı
     } for c in courses])
 
-# --- GÜNCELLENEN KISIM: Kredi Kontrolü ve Unique Constraint ---
 @api.route('/courses', methods=['POST'])
 def create_course():
     try:
@@ -375,19 +375,15 @@ def create_course():
         classroom_id = data.get('classroom_id')
         instructor_id = data.get('instructor_id')
         
-        # 1. Zorunlu Alan Kontrolü
         if not all([code, name, credits]):
             return jsonify({'error': 'Missing required fields'}), 400
             
-        # 2. Kredi Pozitiflik Kontrolü
         if int(credits) < 1:
             return jsonify({'error': 'Credits must be a positive integer'}), 400
 
-        # 3. Kurs Kodu Benzersizlik Kontrolü (Unique Code)
         if Course.query.filter_by(course_code=code).first():
             return jsonify({'error': 'Course code already exists'}), 409
 
-        # 4. Kurs Adı Benzersizlik Kontrolü (Unique Name)
         if Course.query.filter_by(course_name=name).first():
             return jsonify({'error': 'Course name already exists'}), 409
             
@@ -409,7 +405,7 @@ def create_course():
         return jsonify({'error': str(e)}), 500
 
 # ==========================================
-# ENROLLMENTS
+# ENROLLMENTS (GÜNCELLENDİ)
 # ==========================================
 @api.route('/enrollments', methods=['POST'])
 def enroll_student():
@@ -423,6 +419,24 @@ def enroll_student():
         if not all([student_id, course_id, year, term]):
             return jsonify({'error': 'Missing required fields'}), 400
 
+        # --- KAPASİTE KONTROLÜ BAŞLANGIÇ ---
+        course = Course.query.get(course_id)
+        if not course:
+            return jsonify({'error': 'Course not found'}), 404
+
+        # Mevcut kayıt sayısını bul
+        current_count = Enrollment.query.filter_by(course_id=course_id).count()
+        
+        # Sınıf kapasitesini kontrol et
+        if course.classroom:
+            if current_count >= course.classroom.capacity:
+                return jsonify({'error': f'Classroom is full! Capacity: {course.classroom.capacity}'}), 409
+        
+        # Öğrenci zaten bu derse kayıtlı mı?
+        if Enrollment.query.filter_by(student_id=student_id, course_id=course_id).first():
+             return jsonify({'error': 'Student already enrolled in this course'}), 409
+        # --- KAPASİTE KONTROLÜ BİTİŞ ---
+
         enrollment = Enrollment(
             student_id=student_id,
             course_id=course_id,
@@ -434,6 +448,27 @@ def enroll_student():
         return jsonify({'message': 'Enrolled successfully', 'id': enrollment.id}), 201
     except Exception as e:
         db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+# --- YENİ EKLENEN ENDPOINT: Bir derse kayıtlı öğrencileri getir ---
+@api.route('/courses/<string:course_id>/students', methods=['GET'])
+def get_course_students(course_id):
+    try:
+        enrollments = Enrollment.query.filter_by(course_id=course_id).all()
+        result = []
+        for e in enrollments:
+            s = e.student
+            u = s.user
+            result.append({
+                'id': s.id,
+                'student_number': s.student_number,
+                'name': u.first_name,
+                'surname': u.last_name,
+                'department': s.department.name if s.department else "",
+                'enrollment_date': e.created_at.strftime('%Y-%m-%d') if hasattr(e, 'created_at') else None
+            })
+        return jsonify(result), 200
+    except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 @api.route('/enrollments', methods=['GET'])
@@ -458,7 +493,7 @@ def create_session():
         year = data.get('year')
         term = data.get('term')
         day = data.get('day_of_week')
-        start_time_str = data.get('start_time') # Expecting ISO format
+        start_time_str = data.get('start_time')
         end_time_str = data.get('end_time')
 
         if not all([course_id, year, term, day, start_time_str, end_time_str]):
@@ -478,7 +513,6 @@ def create_session():
         db.session.add(session)
         db.session.commit()
         
-        # Initialize SessionAttendance (1-to-1)
         session_attendance = SessionAttendance(
             course_session_id=session.id,
             status='Scheduled' 
@@ -507,19 +541,15 @@ def get_sessions():
 # ==========================================
 @api.route('/attendance/session', methods=['POST'])
 def update_session_attendance():
-    """ 
-    Check-in/Update status for the session itself (e.g., started, completed) 
-    """
     try:
         data = request.json
-        session_id = data.get('session_id') # This is the CourseSession ID
+        session_id = data.get('session_id')
         status = data.get('status')
-        check_in = data.get('check_in_time') # Optional
+        check_in = data.get('check_in_time')
 
         if not session_id or not status:
              return jsonify({'error': 'Session ID and Status required'}), 400
 
-        # Find the 1-to-1 attendance record
         sa = SessionAttendance.query.filter_by(course_session_id=session_id).first()
         if not sa:
             return jsonify({'error': 'Session Attendance record not found'}), 404
@@ -539,13 +569,12 @@ def mark_student_attendance():
     try:
         data = request.json
         student_id = data.get('student_id')
-        session_id = data.get('session_id') # CourseSession ID
+        session_id = data.get('session_id')
         is_attendant = data.get('is_attendant', False)
 
         if not student_id or not session_id:
              return jsonify({'error': 'Student ID and Session ID required'}), 400
 
-        # Resolve SessionAttendance ID from CourseSession ID
         sa = SessionAttendance.query.filter_by(course_session_id=session_id).first()
         if not sa:
              return jsonify({'error': 'Session Attendance not initialized'}), 400
@@ -575,16 +604,11 @@ def mark_student_attendance():
 
 @api.route('/attendance/session/<string:session_id>', methods=['GET'])
 def get_session_attendance(session_id):
-    """ Get list of students and their attendance for a session """
     try:
-        # session_id is CourseSession ID
         sa = SessionAttendance.query.filter_by(course_session_id=session_id).first()
         if not sa:
              return jsonify({'error': 'Session Attendance not found'}), 404
 
-        # Get all enrollments for the course to show absent students too? 
-        # For now, just show recorded attendances + enrollment list merging might be better done on frontend or complex query.
-        # Let's return what records we have.
         records = StudentAttendance.query.filter_by(session_attendance_id=sa.id).all()
         
         result = []
@@ -615,11 +639,9 @@ def login():
     if not username or not password:
         return jsonify({'error': 'Username and password required'}), 400
 
-    # 1. Instructor Check
     instructor = Instructor.query.filter_by(username=username).first()
     if instructor:
         user = instructor.user
-        # Not: Gerçek uygulamada şifre hash'lenmeli!
         if user and user.password == password:
             return jsonify({
                 'role': 'instructor',
@@ -630,11 +652,9 @@ def login():
                 'department': instructor.department.name if instructor.department else ""
             }), 200
 
-    # 2. Student Check
     student = Student.query.filter_by(student_number=username).first()
     if student:
         user = student.user
-        # Basit şifre kontrolü (kullanıcı modelindeki şifre alanı ile)
         if user and user.password == password:
              return jsonify({
                 'role': 'student',
