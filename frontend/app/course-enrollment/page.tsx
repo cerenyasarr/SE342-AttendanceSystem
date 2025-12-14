@@ -80,7 +80,7 @@ const translations = {
     enrolling: "Enrolling...",
     enrolledStudents: "Students Enrolled in This Course",
     noStudents: "No students enrolled in this course yet.",
-    success: "Student enrolled successfully",
+    success: "Operation successful!",
     removedSuccess: "Student removed from course.",
     removeError: "Error removing student.",
     noCourseSelected: "Please select a course",
@@ -127,7 +127,7 @@ export default function CourseEnrollmentPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-  // --- YENİ: Modal State'leri ---
+  // --- Modal State'leri ---
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState<string | null>(null);
 
@@ -171,7 +171,15 @@ export default function CourseEnrollmentPage() {
   const fetchEnrolledStudents = async (courseId: string) => {
     try {
       const res = await fetch(`http://localhost:5001/api/courses/${courseId}/students`);
-      if (res.ok) setEnrolledList(await res.json());
+      if (res.ok) {
+        const data = await res.json();
+        
+        // --- HATA DÜZELTME: Çift Kayıtları Temizle ---
+        // Veritabanında aynı ID ile birden fazla kayıt varsa, sadece benzersiz olanları alırız.
+        const uniqueData = Array.from(new Map(data.map((item: any) => [item.id, item])).values());
+        
+        setEnrolledList(uniqueData);
+      }
     } catch (e) { console.error(e); }
   };
 
@@ -271,7 +279,7 @@ export default function CourseEnrollmentPage() {
       setMessage(null);
 
       try {
-          // Frontend Simülasyonu (Backend'de DELETE endpoint'i olana kadar)
+          // Frontend Simülasyonu
           setEnrolledList(prev => prev.filter(s => s.id !== studentToDelete));
           
           if (selectedCourseObj) {
@@ -279,7 +287,7 @@ export default function CourseEnrollmentPage() {
           }
 
           setMessage({ type: 'success', text: t.removedSuccess });
-          setShowDeleteModal(false); // Modalı kapat
+          setShowDeleteModal(false); 
           setStudentToDelete(null);
 
       } catch (err) {
@@ -401,7 +409,6 @@ export default function CourseEnrollmentPage() {
                         </span>
                         <span className={`text-xl ${colors.textSecondary}`}>/ {selectedCourseObj.capacity}</span>
                     </div>
-                    {/* Progress Bar */}
                     <div className={`w-48 h-2 ${isDarkMode ? 'bg-gray-600' : 'bg-gray-300'} rounded-full mt-2 overflow-hidden`}>
                         <div 
                             className={`h-full ${selectedCourseObj.enrolled_count >= selectedCourseObj.capacity ? 'bg-red-500' : 'bg-green-500'}`} 
@@ -424,7 +431,7 @@ export default function CourseEnrollmentPage() {
             {selectedCourseId && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 
-                {/* 2. ÖĞRENCİ HAVUZU (Solda) */}
+                {/* 2. ÖĞRENCİ HAVUZU */}
                 <div className={`${colors.bgCard} border ${colors.border} rounded-xl p-6 shadow-sm h-[600px] flex flex-col transition-colors duration-300`}>
                     <h3 className={`font-bold mb-4 ${colors.textPrimary}`}>{t.searchStudents}</h3>
                     
@@ -446,7 +453,6 @@ export default function CourseEnrollmentPage() {
                                 <div 
                                     key={s.id} 
                                     onClick={() => handleSelectStudent(s.id)}
-                                    // --- DÜZELTME: Koyu/Açık Modda Okunabilir Seçim Renkleri ---
                                     className={`p-3 rounded-lg border cursor-pointer flex items-center gap-3 transition-all ${isSelected 
                                         ? 'border-purple-500 bg-purple-100 dark:bg-purple-900 text-purple-900 dark:text-purple-100' 
                                         : `${colors.border} ${colors.hoverBg}`}`}
@@ -480,7 +486,7 @@ export default function CourseEnrollmentPage() {
                     </div>
                 </div>
 
-                {/* 3. KAYITLI ÖĞRENCİLER LİSTESİ (Sağda) */}
+                {/* 3. KAYITLI ÖĞRENCİLER LİSTESİ */}
                 <div className={`${colors.bgCard} border ${colors.border} rounded-xl p-0 overflow-hidden shadow-sm h-[600px] flex flex-col transition-colors duration-300`}>
                     <div className={`p-6 border-b ${colors.border} ${colors.headerBg} flex justify-between items-center`}>
                         <h3 className={`font-bold ${colors.textPrimary}`}>{t.enrolledStudents}</h3>
@@ -499,13 +505,12 @@ export default function CourseEnrollmentPage() {
                             </thead>
                             <tbody className={`divide-y ${colors.border}`}>
                                 {enrolledList.length > 0 ? enrolledList.map((s, idx) => (
-                                    <tr key={s.id} className={`${colors.rowHoverBg} transition-colors`}>
+                                    <tr key={`${s.id}-${idx}`} className={`${colors.rowHoverBg} transition-colors`}>
                                         <td className={`p-4 text-sm ${colors.textSecondary}`}>{idx + 1}</td>
                                         <td className={`p-4 text-sm font-mono ${colors.textPrimary}`}>{s.student_number}</td>
                                         <td className={`p-4 text-sm ${colors.textPrimary}`}>{s.name} {s.surname}</td>
                                         <td className="p-4 text-right">
                                             <button 
-                                                // --- BURADA MODAL AÇILIYOR ---
                                                 onClick={() => initiateRemove(s.id)}
                                                 disabled={isSubmitting}
                                                 className="p-2 bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors disabled:opacity-50"
@@ -539,7 +544,7 @@ export default function CourseEnrollmentPage() {
         </div>
       </div>
 
-      {/* --- YENİ: SİLME ONAY MODALI --- */}
+      {/* --- YENİ: ÖZEL ONAY MODALI (Siyah Ekran Uyarısı Yerine) --- */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
           <div className={`${colors.bgCard} rounded-xl shadow-2xl max-w-sm w-full p-6 border ${colors.border} animate-fade-in`}>
