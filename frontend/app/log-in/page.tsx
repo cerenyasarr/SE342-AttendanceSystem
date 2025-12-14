@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Globe, Moon, Sun, UserPlus, LogIn } from 'lucide-react';
+import { Globe, Moon, Sun, UserPlus, LogIn, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
 
 // Translations
@@ -28,7 +28,10 @@ const translations = {
     student: "Öğrenci: 2024001 / herhangi",
     lightMode: "Açık Tema",
     darkMode: "Koyu Tema",
-    registerSuccess: "Kayıt başarılı! Lütfen giriş yapın."
+    registerSuccess: "Kayıt başarılı! Giriş ekranına yönlendiriliyorsunuz...",
+    passwordMismatch: "Şifreler eşleşmiyor!",
+    connectionError: "Bağlantı hatası",
+    fillRequired: "Lütfen zorunlu alanları doldurun."
   },
   en: {
     title: "Maltepe University",
@@ -52,7 +55,10 @@ const translations = {
     student: "Student: 2024001 / any",
     lightMode: "Light Mode",
     darkMode: "Dark Mode",
-    registerSuccess: "Registration successful! Please log in."
+    registerSuccess: "Registration successful! Redirecting to login...",
+    passwordMismatch: "Passwords do not match!",
+    connectionError: "Connection error",
+    fillRequired: "Please fill in required fields."
   }
 };
 
@@ -72,10 +78,14 @@ export default function LoginPage() {
   const [regDepartment, setRegDepartment] = useState('');
 
   // UI States
-  const [isLoginMode, setIsLoginMode] = useState(true); // true = Login, false = Register
+  const [isLoginMode, setIsLoginMode] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [language, setLanguage] = useState<'tr' | 'en'>('en');
   const [mounted, setMounted] = useState(false);
+  
+  // YENİ: Bildirim State'leri
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const t = translations[language];
 
@@ -93,6 +103,12 @@ export default function LoginPage() {
     }
   }, []);
 
+  // Mod değiştiğinde hataları temizle
+  useEffect(() => {
+    setError(null);
+    setSuccessMessage(null);
+  }, [isLoginMode]);
+
   const toggleDarkMode = () => {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
@@ -107,8 +123,9 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
 
-    // 1. Demo Hesabı Mantığı (Fallback olarak kalsın)
+    // 1. Demo Hesabı
     if (username === 'emreolca' && password === 'emreolca') {
       const demoUser = { 
         id: 999,
@@ -133,7 +150,7 @@ export default function LoginPage() {
         return;
     }
 
-    // 2. Gerçek Backend Girişi
+    // 2. Backend Girişi
     try {
       const response = await fetch('http://localhost:5001/api/login', {
         method: 'POST',
@@ -143,11 +160,8 @@ export default function LoginPage() {
 
       if (response.ok) {
         const data = await response.json();
-        
-        // Backend'den gelen kullanıcı bilgisini tarayıcıya kaydet
         localStorage.setItem('currentUser', JSON.stringify(data));
         
-        // Role göre yönlendirme
         if (data.role === 'instructor') {
           window.location.href = '/?page=teacher-live-attendance';
         } else {
@@ -155,19 +169,22 @@ export default function LoginPage() {
         }
       } else {
         const err = await response.json();
-        alert(language === 'en' ? (err.error || "Invalid credentials") : (err.error || "Hatalı giriş"));
+        // Hata mesajını state'e at (alert yerine)
+        setError(language === 'en' ? (err.error || "Invalid credentials") : (err.error || "Hatalı giriş"));
       }
     } catch (error) {
       console.error("Login error:", error);
-      alert(language === 'en' ? "Connection error" : "Bağlantı hatası");
+      setError(t.connectionError);
     }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setSuccessMessage(null);
 
     if (regPassword !== regConfirmPassword) {
-      alert(language === 'en' ? "Passwords do not match!" : "Şifreler eşleşmiyor!");
+      setError(t.passwordMismatch);
       return;
     }
 
@@ -188,18 +205,44 @@ export default function LoginPage() {
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Registration failed');
+        // --- HATA MESAJLARINI AYRIŞTIRMA ---
+        let errorMessage = data.error || 'Registration failed';
+
+        if (errorMessage.includes("Username already exists")) {
+            errorMessage = language === 'tr' 
+                ? "Bu kullanıcı adı zaten alınmış." 
+                : "Username already exists.";
+        } else if (errorMessage.includes("Email already exists")) {
+            errorMessage = language === 'tr' 
+                ? "Bu e-posta adresi zaten kayıtlı." 
+                : "Email already exists.";
+        } else if (errorMessage.includes("Missing required fields")) {
+             errorMessage = language === 'tr' 
+                ? "Lütfen zorunlu alanları doldurun." 
+                : "Please fill in required fields.";
+        }
+
+        throw new Error(errorMessage);
       }
 
-      alert(t.registerSuccess);
-      setIsLoginMode(true);
-      // Reset form
+      // Başarılı olduğunda
+      setSuccessMessage(t.registerSuccess);
+      
+      // Formu temizle
       setRegName(''); setRegSurname(''); setRegEmail(''); setRegUsername('');
       setRegPassword(''); setRegConfirmPassword(''); setRegTitle(''); setRegDepartment('');
+
+      // 2 saniye sonra giriş ekranına geç
+      setTimeout(() => {
+        setIsLoginMode(true);
+        setSuccessMessage(null);
+      }, 2000);
+
     } catch (error: any) {
-      alert(error.message);
+      setError(error.message);
     }
   };
 
@@ -289,6 +332,26 @@ export default function LoginPage() {
             </p>
           </div>
 
+          {/* YENİ: Başarı Mesajı Bildirimi */}
+          {successMessage && (
+            <div className={`mb-4 p-3 rounded-lg flex items-center gap-2 text-sm ${
+              isDarkMode ? 'bg-green-900/30 text-green-300 border border-green-800' : 'bg-green-50 text-green-700 border border-green-200'
+            }`}>
+              <CheckCircle2 size={18} className="flex-shrink-0" />
+              <span>{successMessage}</span>
+            </div>
+          )}
+
+          {/* YENİ: Hata Mesajı Bildirimi */}
+          {error && (
+            <div className={`mb-4 p-3 rounded-lg flex items-center gap-2 text-sm ${
+              isDarkMode ? 'bg-red-900/30 text-red-300 border border-red-800' : 'bg-red-50 text-red-700 border border-red-200'
+            }`}>
+              <AlertCircle size={18} className="flex-shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
           {/* Form Content */}
           <form onSubmit={isLoginMode ? handleLogin : handleRegister} className="space-y-4">
 
@@ -298,7 +361,7 @@ export default function LoginPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className={`block text-xs font-semibold mb-1.5 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      {t.name}
+                      {t.name} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -313,7 +376,7 @@ export default function LoginPage() {
                   </div>
                   <div>
                     <label className={`block text-xs font-semibold mb-1.5 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      {t.surname}
+                      {t.surname} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -330,7 +393,7 @@ export default function LoginPage() {
 
                 <div>
                   <label className={`block text-xs font-semibold mb-1.5 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    {t.email}
+                    {t.email} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
@@ -347,11 +410,10 @@ export default function LoginPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className={`block text-xs font-semibold mb-1.5 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      {language === 'en' ? 'Title' : 'Ünvan'}
+                      {language === 'en' ? 'Title (Opt)' : 'Ünvan (İsteğe Bağlı)'}
                     </label>
                     <input
                       type="text"
-                      required
                       value={regTitle}
                       onChange={(e) => setRegTitle(e.target.value)}
                       placeholder={language === 'en' ? 'Dr.' : 'Dr.'}
@@ -363,7 +425,7 @@ export default function LoginPage() {
                   </div>
                   <div>
                     <label className={`block text-xs font-semibold mb-1.5 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      {language === 'en' ? 'Department' : 'Bölüm'}
+                      {language === 'en' ? 'Department' : 'Bölüm'} <span className="text-red-500">*</span>
                     </label>
                     <select
                       required
@@ -389,7 +451,7 @@ export default function LoginPage() {
             {/* Common Fields */}
             <div>
               <label className={`block text-xs font-semibold mb-1.5 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                {t.username}
+                {t.username} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -406,7 +468,7 @@ export default function LoginPage() {
 
             <div>
               <label className={`block text-xs font-semibold mb-1.5 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                {t.password}
+                {t.password} <span className="text-red-500">*</span>
               </label>
               <input
                 type="password"
@@ -424,7 +486,7 @@ export default function LoginPage() {
             {!isLoginMode && (
               <div>
                 <label className={`block text-xs font-semibold mb-1.5 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                  {t.confirmPassword}
+                  {t.confirmPassword} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="password"
@@ -457,6 +519,8 @@ export default function LoginPage() {
                 setIsLoginMode(!isLoginMode);
                 setUsername(''); setPassword('');
                 setRegName(''); setRegSurname(''); setRegEmail(''); setRegUsername(''); setRegPassword(''); setRegConfirmPassword('');
+                setError(null);
+                setSuccessMessage(null);
               }}
               className={`text-sm font-medium hover:underline transition-colors ${isDarkMode ? 'text-purple-400 hover:text-purple-300' : 'text-purple-600 hover:text-purple-800'
                 }`}
