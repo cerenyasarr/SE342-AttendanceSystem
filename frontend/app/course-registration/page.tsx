@@ -160,7 +160,7 @@ export default function CourseRegistrationPage() {
 
   const fetchInstructors = async () => {
     try {
-      const res = await fetch('http://localhost:5001/api/instructors');
+      const res = await fetch('http://127.0.0.1:5000/api/instructors');
       if (res.ok) {
         const data = await res.json();
         setInstructors(data);
@@ -172,7 +172,7 @@ export default function CourseRegistrationPage() {
 
   const fetchClassrooms = async () => {
     try {
-      const res = await fetch('http://localhost:5001/api/classrooms');
+      const res = await fetch('http://127.0.0.1:5000/api/classrooms');
       if (res.ok) {
         const data = await res.json();
         setClassrooms(data);
@@ -220,7 +220,7 @@ export default function CourseRegistrationPage() {
     }
 
     try {
-      const response = await fetch('http://localhost:5001/api/classrooms', {
+      const response = await fetch('http://127.0.0.1:5000/api/classrooms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -297,7 +297,7 @@ export default function CourseRegistrationPage() {
     setSubmitSuccess(false);
 
     try {
-      const response = await fetch('http://localhost:5001/api/courses', {
+      const response = await fetch('http://127.0.0.1:5000/api/courses', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

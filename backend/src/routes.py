@@ -365,6 +365,22 @@ def get_courses():
         'enrolled_count': Enrollment.query.filter_by(course_id=c.id).count() # Mevcut kayıt sayısı
     } for c in courses])
 
+@api.route('/instructors/<string:instructor_id>/courses', methods=['GET'])
+def get_instructor_courses(instructor_id):
+    try:
+        courses = Course.query.filter_by(instructor_id=instructor_id).all()
+        return jsonify([{
+            'id': c.id, 
+            'code': c.course_code, 
+            'name': c.course_name,
+            'credits': c.credits,
+            'classroom': c.classroom.classroom_code if c.classroom else None,
+            'enrolled_count': Enrollment.query.filter_by(course_id=c.id).count()
+        } for c in courses]), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @api.route('/courses', methods=['POST'])
 def create_course():
     try:
@@ -515,12 +531,24 @@ def create_session():
         
         session_attendance = SessionAttendance(
             course_session_id=session.id,
-            status='Scheduled' 
+            status='Active' 
         )
         db.session.add(session_attendance)
+        db.session.flush() # ID almak için flush
+
+        # Dersi alan tüm öğrencileri bul ve StudentAttendance kayıtlarını oluştur
+        enrollments = Enrollment.query.filter_by(course_id=course_id).all()
+        for enrollment in enrollments:
+            student_attendance = StudentAttendance(
+                session_attendance_id=session_attendance.id,
+                student_id=enrollment.student_id,
+                is_attendant=False # Başlangıçta hepsi yok sayılır
+            )
+            db.session.add(student_attendance)
+
         db.session.commit()
 
-        return jsonify({'message': 'Session created', 'id': session.id}), 201
+        return jsonify({'message': 'Session created', 'id': session.id, 'session_attendance_id': session_attendance.id}), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
@@ -623,6 +651,73 @@ def get_session_attendance(session_id):
                 'date': r.updated_at.isoformat() if r.updated_at else None
             })
         return jsonify(result), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# ==========================================
+# REPORTING (YENİ)
+# ==========================================
+@api.route('/students/<string:student_id>/attendance-report', methods=['GET'])
+def get_student_attendance_report(student_id):
+    try:
+        # 1. Öğrenci kontrolü
+        student = Student.query.get(student_id)
+        if not student:
+            return jsonify({'error': 'Student not found'}), 404
+
+        # 2. Kayıtlı olunan dersleri bul
+        enrollments = Enrollment.query.filter_by(student_id=student.id).all()
+        
+        course_reports = []
+        total_sessions_global = 0
+        total_present_global = 0
+        total_late_global = 0 # Şu an veritabanında "Late" statusu yok ama future-proof olsun
+
+        for enrollment in enrollments:
+            course = enrollment.course
+            
+            # Bu ders için toplam oluşturulmuş session sayısı
+            total_sessions = CourseSession.query.filter_by(course_id=course.id).count()
+            
+            # Öğrencinin katıldığı session sayısı
+            # StudentAttendance tablosunda bu öğrenci ve bu dersin sessionları için is_attendant=True olanlar
+            attended_count = db.session.query(StudentAttendance)\
+                .join(SessionAttendance)\
+                .join(CourseSession)\
+                .filter(
+                    StudentAttendance.student_id == student.id,
+                    StudentAttendance.is_attendant == True,
+                    CourseSession.course_id == course.id
+                ).count()
+
+            percentage = 0
+            if total_sessions > 0:
+                percentage = round((attended_count / total_sessions) * 100, 1)
+
+            course_reports.append({
+                'course_code': course.course_code,
+                'course_name': course.course_name,
+                'total_sessions': total_sessions,
+                'attended_sessions': attended_count,
+                'attendance_percentage': percentage
+            })
+            
+            total_sessions_global += total_sessions
+            total_present_global += attended_count
+
+        summary = {
+            'total_sessions': total_sessions_global,
+            'total_present': total_present_global,
+            'total_absent': total_sessions_global - total_present_global,
+            'overall_percentage': round((total_present_global / total_sessions_global * 100), 1) if total_sessions_global > 0 else 0
+        }
+
+        return jsonify({
+            'student_id': student.id,
+            'summary': summary,
+            'courses': course_reports
+        }), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500

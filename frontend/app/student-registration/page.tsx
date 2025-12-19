@@ -157,7 +157,7 @@ export default function StudentRegistrationPage() {
 
   const fetchStudents = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/students');
+      const response = await fetch('http://127.0.0.1:5000/api/students');
       if (response.ok) {
         const data = await response.json();
         setStudents(data);
@@ -190,7 +190,7 @@ export default function StudentRegistrationPage() {
     if (!window.confirm('Are you sure you want to delete this student?')) return;
 
     try {
-      const response = await fetch(`http://localhost:5001/api/students/${id}`, {
+      const response = await fetch(`http://127.0.0.1:5000/api/students/${id}`, {
         method: 'DELETE',
       });
       if (response.ok) {
@@ -215,7 +215,7 @@ export default function StudentRegistrationPage() {
       phone: student.phone || ''
     });
     if (student.photo_path) {
-      setPhotoPreview(`http://localhost:5001/${student.photo_path}`);
+      setPhotoPreview(`http://127.0.0.1:5000/${student.photo_path}`);
     } else {
       setPhotoPreview(null);
     }
@@ -343,8 +343,8 @@ export default function StudentRegistrationPage() {
 
     try {
       const url = editingId
-        ? `http://localhost:5001/api/students/${editingId}`
-        : 'http://localhost:5001/api/students';
+        ? `http://127.0.0.1:5000/api/students/${editingId}`
+        : 'http://127.0.0.1:5000/api/students';
 
       const method = editingId ? 'PUT' : 'POST';
 
@@ -952,7 +952,7 @@ export default function StudentRegistrationPage() {
                               <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
                                 {student.photo_path ? (
                                   <img
-                                    src={`http://localhost:5001/${student.photo_path}`}
+                                    src={`http://127.0.0.1:5000/${student.photo_path}`}
                                     alt={student.name}
                                     className="w-full h-full object-cover"
                                   />

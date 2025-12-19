@@ -18,14 +18,11 @@ const translations = {
     name: "Ad",
     surname: "Soyad",
     email: "Kurumsal E-posta",
-    username: "Kullanıcı Adı",
+    username: "Kullanıcı Adı / Öğrenci No",
     password: "Şifre",
     confirmPassword: "Şifre Tekrar",
-    usernamePlaceholder: "Örn: emreolca",
+    usernamePlaceholder: "Örn: emreolca veya 2024001",
     passwordPlaceholder: "••••••••",
-    demoAccounts: "Demo Hesaplar:",
-    instructor: "Öğretmen: emreolca / emreolca",
-    student: "Öğrenci: 2024001 / herhangi",
     lightMode: "Açık Tema",
     darkMode: "Koyu Tema",
     registerSuccess: "Kayıt başarılı! Giriş ekranına yönlendiriliyorsunuz...",
@@ -45,14 +42,11 @@ const translations = {
     name: "Name",
     surname: "Surname",
     email: "Institutional Email",
-    username: "Username",
+    username: "Username / Student No",
     password: "Password",
     confirmPassword: "Confirm Password",
-    usernamePlaceholder: "Ex: instructor",
+    usernamePlaceholder: "Ex: instructor or 2024001",
     passwordPlaceholder: "••••••••",
-    demoAccounts: "Demo Accounts:",
-    instructor: "Instructor: emreolca / emreolca",
-    student: "Student: 2024001 / any",
     lightMode: "Light Mode",
     darkMode: "Dark Mode",
     registerSuccess: "Registration successful! Redirecting to login...",
@@ -82,7 +76,7 @@ export default function LoginPage() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [language, setLanguage] = useState<'tr' | 'en'>('en');
   const [mounted, setMounted] = useState(false);
-  
+
   // YENİ: Bildirim State'leri
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -121,38 +115,13 @@ export default function LoginPage() {
     localStorage.setItem('language', newLang);
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     setError(null);
 
-    // 1. Demo Hesabı
-    if (username === 'emreolca' && password === 'emreolca') {
-      const demoUser = { 
-        id: 999,
-        name: 'Emre', 
-        surname: 'Olca', 
-        title: 'Dr.', 
-        role: 'instructor' 
-      };
-      localStorage.setItem('currentUser', JSON.stringify(demoUser));
-      window.location.href = '/?page=teacher-live-attendance';
-      return;
-    }
-
-    if (username === '2024001') {
-        const demoStudent = {
-            id: 888,
-            name: 'Öğrenci',
-            role: 'student'
-        };
-        localStorage.setItem('currentUser', JSON.stringify(demoStudent));
-        window.location.href = '/?page=student-reports';
-        return;
-    }
-
-    // 2. Backend Girişi
+    // 1. Backend Girişi
     try {
-      const response = await fetch('http://localhost:5001/api/login', {
+      const response = await fetch('http://127.0.0.1:5000/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
@@ -161,7 +130,7 @@ export default function LoginPage() {
       if (response.ok) {
         const data = await response.json();
         localStorage.setItem('currentUser', JSON.stringify(data));
-        
+
         if (data.role === 'instructor') {
           window.location.href = '/?page=teacher-live-attendance';
         } else {
@@ -178,7 +147,7 @@ export default function LoginPage() {
     }
   };
 
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     setError(null);
     setSuccessMessage(null);
@@ -189,7 +158,7 @@ export default function LoginPage() {
     }
 
     try {
-      const response = await fetch('http://127.0.0.1:5001/api/instructors', {
+      const response = await fetch('http://127.0.0.1:5000/api/instructors', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -212,17 +181,17 @@ export default function LoginPage() {
         let errorMessage = data.error || 'Registration failed';
 
         if (errorMessage.includes("Username already exists")) {
-            errorMessage = language === 'tr' 
-                ? "Bu kullanıcı adı zaten alınmış." 
-                : "Username already exists.";
+          errorMessage = language === 'tr'
+            ? "Bu kullanıcı adı zaten alınmış."
+            : "Username already exists.";
         } else if (errorMessage.includes("Email already exists")) {
-            errorMessage = language === 'tr' 
-                ? "Bu e-posta adresi zaten kayıtlı." 
-                : "Email already exists.";
+          errorMessage = language === 'tr'
+            ? "Bu e-posta adresi zaten kayıtlı."
+            : "Email already exists.";
         } else if (errorMessage.includes("Missing required fields")) {
-             errorMessage = language === 'tr' 
-                ? "Lütfen zorunlu alanları doldurun." 
-                : "Please fill in required fields.";
+          errorMessage = language === 'tr'
+            ? "Lütfen zorunlu alanları doldurun."
+            : "Please fill in required fields.";
         }
 
         throw new Error(errorMessage);
@@ -230,7 +199,7 @@ export default function LoginPage() {
 
       // Başarılı olduğunda
       setSuccessMessage(t.registerSuccess);
-      
+
       // Formu temizle
       setRegName(''); setRegSurname(''); setRegEmail(''); setRegUsername('');
       setRegPassword(''); setRegConfirmPassword(''); setRegTitle(''); setRegDepartment('');
@@ -246,15 +215,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleQuickLogin = (userType: 'instructor' | 'student') => {
-    if (userType === 'instructor') {
-      setUsername('emreolca');
-      setPassword('emreolca');
-    } else if (userType === 'student') {
-      setUsername('2024001');
-      setPassword('any');
-    }
-  };
 
   if (!mounted) return null;
 
@@ -334,9 +294,8 @@ export default function LoginPage() {
 
           {/* YENİ: Başarı Mesajı Bildirimi */}
           {successMessage && (
-            <div className={`mb-4 p-3 rounded-lg flex items-center gap-2 text-sm ${
-              isDarkMode ? 'bg-green-900/30 text-green-300 border border-green-800' : 'bg-green-50 text-green-700 border border-green-200'
-            }`}>
+            <div className={`mb-4 p-3 rounded-lg flex items-center gap-2 text-sm ${isDarkMode ? 'bg-green-900/30 text-green-300 border border-green-800' : 'bg-green-50 text-green-700 border border-green-200'
+              }`}>
               <CheckCircle2 size={18} className="flex-shrink-0" />
               <span>{successMessage}</span>
             </div>
@@ -344,9 +303,8 @@ export default function LoginPage() {
 
           {/* YENİ: Hata Mesajı Bildirimi */}
           {error && (
-            <div className={`mb-4 p-3 rounded-lg flex items-center gap-2 text-sm ${
-              isDarkMode ? 'bg-red-900/30 text-red-300 border border-red-800' : 'bg-red-50 text-red-700 border border-red-200'
-            }`}>
+            <div className={`mb-4 p-3 rounded-lg flex items-center gap-2 text-sm ${isDarkMode ? 'bg-red-900/30 text-red-300 border border-red-800' : 'bg-red-50 text-red-700 border border-red-200'
+              }`}>
               <AlertCircle size={18} className="flex-shrink-0" />
               <span>{error}</span>
             </div>
@@ -503,6 +461,7 @@ export default function LoginPage() {
 
             <button
               type="submit"
+              onClick={(e) => isLoginMode ? handleLogin(e) : handleRegister(e)}
               className={`w-full text-white font-semibold rounded-lg text-sm px-5 py-3.5 text-center transition-all shadow-md hover:shadow-lg mt-2 ${isDarkMode
                 ? 'bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800'
                 : 'bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800'
@@ -529,36 +488,6 @@ export default function LoginPage() {
             </button>
           </div>
 
-          {/* Demo Accounts */}
-          {isLoginMode && (
-            <div className={`mt-6 rounded-lg p-3 sm:p-4 border transition-colors ${isDarkMode
-              ? 'bg-gray-700/50 border-purple-600/30'
-              : 'bg-purple-50 border border-purple-100'
-              }`}>
-              <h3 className={`font-semibold text-xs sm:text-sm mb-2 transition-colors ${isDarkMode ? 'text-purple-300' : 'text-purple-800'
-                }`}>{t.demoAccounts}</h3>
-              <div className="space-y-2">
-                <button
-                  onClick={() => handleQuickLogin('instructor')}
-                  className={`w-full text-left px-3 py-2 rounded-lg transition-all text-xs font-mono ${isDarkMode
-                    ? 'bg-gray-600/50 hover:bg-gray-600 text-gray-200 hover:text-white'
-                    : 'bg-white hover:bg-purple-100 text-gray-700 hover:text-purple-800'
-                    } border ${isDarkMode ? 'border-gray-600' : 'border-purple-200'}`}
-                >
-                  • {t.instructor}
-                </button>
-                <button
-                  onClick={() => handleQuickLogin('student')}
-                  className={`w-full text-left px-3 py-2 rounded-lg transition-all text-xs font-mono ${isDarkMode
-                    ? 'bg-gray-600/50 hover:bg-gray-600 text-gray-200 hover:text-white'
-                    : 'bg-white hover:bg-purple-100 text-gray-700 hover:text-purple-800'
-                    } border ${isDarkMode ? 'border-gray-600' : 'border-purple-200'}`}
-                >
-                  • {t.student}
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

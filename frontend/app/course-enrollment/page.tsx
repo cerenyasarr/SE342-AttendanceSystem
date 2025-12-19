@@ -156,21 +156,21 @@ export default function CourseEnrollmentPage() {
 
   const fetchCourses = async () => {
     try {
-      const res = await fetch('http://localhost:5001/api/courses');
+      const res = await fetch('http://127.0.0.1:5000/api/courses');
       if (res.ok) setCourses(await res.json());
     } catch (e) { console.error(e); }
   };
 
   const fetchStudents = async () => {
     try {
-      const res = await fetch('http://localhost:5001/api/students');
+      const res = await fetch('http://127.0.0.1:5000/api/students');
       if (res.ok) setAllStudents(await res.json());
     } catch (e) { console.error(e); }
   };
 
   const fetchEnrolledStudents = async (courseId: string) => {
     try {
-      const res = await fetch(`http://localhost:5001/api/courses/${courseId}/students`);
+      const res = await fetch(`http://127.0.0.1:5000/api/courses/${courseId}/students`);
       if (res.ok) {
         const data = await res.json();
         
@@ -238,7 +238,7 @@ export default function CourseEnrollmentPage() {
     try {
       const studentIds = Array.from(selectedStudents);
       const promises = studentIds.map(studentId =>
-        fetch('http://localhost:5001/api/enrollments', {
+        fetch('http://127.0.0.1:5000/api/enrollments', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
