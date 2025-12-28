@@ -3,6 +3,7 @@ from config import Config
 from extensions import db, cors
 from routes import api
 import os
+from sqlalchemy import inspect
 
 def create_app():
     app = Flask(__name__)
@@ -28,8 +29,16 @@ def create_app():
 
 app = create_app()
 
-if __name__ == '__main__':
-    with app.app_context():
-        # Create tables if they don't exist
+with app.app_context():
+    inspector = inspect(db.engine)
+    tables = inspector.get_table_names()
+    
+    if not tables:
+        print("Creating database tables...")
         db.create_all()
+        print("Database tables created successfully.")
+    else:
+        print(f"Database already initialized. Found {len(tables)} tables.")
+
+if __name__ == '__main__':
     app.run(debug=True, port=5001)

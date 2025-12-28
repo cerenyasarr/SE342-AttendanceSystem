@@ -2,3 +2,9 @@
 __pycache__/
 backups/
 *.bak
+instance/
+*.sqlite
+*.pyc
+venv/
+env/
+.env.local
